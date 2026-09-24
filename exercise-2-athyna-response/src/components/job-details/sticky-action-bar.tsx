@@ -16,7 +16,6 @@ export function StickyActionBar({
   onApplyClick,
   className = "",
 }: StickyActionBarProps) {
-  const [isVisible, setIsVisible] = React.useState(false)
   const [isSaved, setIsSaved] = React.useState(false)
   const salaryText = formatSalary(job.salary)
 
@@ -33,22 +32,6 @@ export function StickyActionBar({
       }
     }
   }, [job.id])
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 200) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  if (!isVisible) return null
 
   const handleApply = (e: React.MouseEvent) => {
     e.preventDefault()

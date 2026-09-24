@@ -252,3 +252,111 @@ describe("Spec 0005: Telemetry Dispatch Seam", () => {
     expect(payload.position).toBe(0)
   })
 })
+
+describe("Spec 0005: Responsive Sticky Bar Seam", () => {
+  let events: Array<{ name: string; payload: unknown }>
+  let unsubscribe: () => void
+  let windowOpenSpy: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    repo.clearJobsCache()
+    localStorage.clear()
+    events = []
+    unsubscribe = telemetry.onTelemetry((name, payload) => {
+      events.push({ name, payload })
+    })
+    windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null)
+  })
+
+  afterEach(() => {
+    unsubscribe()
+    windowOpenSpy.mockRestore()
+  })
+
+  it("renders sticky action bar immediately on mobile without requiring scroll", () => {
+    render(<JobDetailsClient id={sampleJob.id} initialJob={sampleJob} />)
+
+    const stickyBar = screen.getByTestId("sticky-action-bar")
+    expect(stickyBar).toBeInTheDocument()
+    expect(stickyBar).toHaveTextContent(sampleJob.title)
+    expect(stickyBar).toHaveTextContent("$195k-$220k")
+  })
+
+  it("clicking sticky apply button triggers external open and emits apply_cta_clicked with position sticky_bar", () => {
+    render(<JobDetailsClient id={sampleJob.id} initialJob={sampleJob} />)
+
+    const stickyApplyBtn = screen.getByTestId("sticky-apply-button")
+    expect(stickyApplyBtn).toBeInTheDocument()
+    fireEvent.click(stickyApplyBtn)
+
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      sampleJob.applicationUrl,
+      "_blank",
+      "noopener,noreferrer"
+    )
+
+    const applyEvents = events.filter((e) => e.name === "apply_cta_clicked")
+    expect(applyEvents.length).toBe(1)
+    const payload = applyEvents[0].payload as telemetry.ApplyCtaClickedEvent
+    expect(payload.job_id).toBe(sampleJob.id)
+    expect(payload.position).toBe("sticky_bar")
+  })
+
+  it("toggles save bookmark from sticky action bar and persists in localStorage", () => {
+    render(<JobDetailsClient id={sampleJob.id} initialJob={sampleJob} />)
+
+    const stickySaveBtn = screen.getByTestId("sticky-save-button")
+    expect(stickySaveBtn).toHaveAttribute("aria-pressed", "false")
+
+    fireEvent.click(stickySaveBtn)
+    expect(stickySaveBtn).toHaveAttribute("aria-pressed", "true")
+
+    const savedFromStorage = JSON.parse(
+      localStorage.getItem("athyna_saved_jobs") || "{}"
+    )
+    expect(savedFromStorage[sampleJob.id]).toBe(true)
+
+    // Toggle off
+    fireEvent.click(stickySaveBtn)
+    expect(stickySaveBtn).toHaveAttribute("aria-pressed", "false")
+    const updatedStorage = JSON.parse(
+      localStorage.getItem("athyna_saved_jobs") || "{}"
+    )
+    expect(updatedStorage[sampleJob.id]).toBeUndefined()
+  })
+})
+
+describe("Spec 0005: Modal Sizing and Ellipsis Truncation", () => {
+  it("renders post-apply dialog with enlarged modal width and ellipsis on long job titles", async () => {
+    const longTitleJob: AthynaJob = {
+      ...similarJob,
+      title: "Squad Master/Product owner Private Individuals Onboarding (DBCF) with Extended Title Extra Words",
+    }
+
+    vi.spyOn(repo, "getJobs").mockResolvedValueOnce({
+      jobs: [sampleJob, longTitleJob],
+      total: 2,
+      source: "live_api",
+    })
+    vi.spyOn(window, "open").mockImplementation(() => null)
+
+    render(<JobDetailsClient id={sampleJob.id} initialJob={sampleJob} />)
+
+    // Click apply to trigger dialog
+    const applyBtn = screen.getByTestId("primary-apply-button")
+    fireEvent.click(applyBtn)
+
+    await waitFor(() => {
+      const dialog = screen.getByTestId("post-apply-dialog")
+      expect(dialog).toBeInTheDocument()
+      // Enforce enlarged modal width class
+      expect(dialog.className).toMatch(/sm:max-w-xl/)
+    })
+
+    const titleElement = screen.getByTitle(longTitleJob.title)
+    expect(titleElement).toBeInTheDocument()
+    // Enforce truncate class on title
+    expect(titleElement.className).toContain("truncate")
+  })
+})
