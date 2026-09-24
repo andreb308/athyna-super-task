@@ -372,4 +372,91 @@ describe("Home Page", () => {
       expect(screen.getByText(/lead react full-stack engineer/i)).toBeInTheDocument()
     })
   })
+
+  it("filters jobs interactively via Type dropdown and creates active filter chip", async () => {
+    render(<Home />)
+
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeInTheDocument()
+    })
+
+    // Open Type dropdown
+    const typeBtn = screen.getByRole("button", { name: /^type$/i })
+    fireEvent.click(typeBtn)
+
+    // Click Part Time inside dialog
+    const typeDialog = screen.getByRole("dialog", { name: /employment type filter/i })
+    const partTimeOption = within(typeDialog).getByText("Part Time")
+    fireEvent.click(partTimeOption)
+
+    // Verify chip was promoted
+    const activeFiltersRegion = screen.getByRole("region", { name: /active search filters/i })
+    expect(within(activeFiltersRegion).getByText("Part Time")).toBeInTheDocument()
+
+    // Table should filter to part-time roles
+    await waitFor(() => {
+      expect(screen.getByText(/part-time nlp python researcher/i)).toBeInTheDocument()
+    })
+  })
+
+  it("filters jobs interactively via Level dropdown and creates active filter chip", async () => {
+    render(<Home />)
+
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeInTheDocument()
+    })
+
+    // Open Level dropdown
+    const levelBtn = screen.getByRole("button", { name: /^level$/i })
+    fireEvent.click(levelBtn)
+
+    // Click Senior inside Level dialog
+    const levelDialog = screen.getByRole("dialog", { name: /experience level filter/i })
+    const seniorOption = within(levelDialog).getByText("Senior")
+    fireEvent.click(seniorOption)
+
+    const activeFiltersRegion = screen.getByRole("region", { name: /active search filters/i })
+    expect(within(activeFiltersRegion).getByText("Senior")).toBeInTheDocument()
+  })
+
+  it("applies salary filter via Salary dropdown inputs and Confirm button", async () => {
+    render(<Home />)
+
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeInTheDocument()
+    })
+
+    // Open Salary dropdown
+    const salaryBtn = screen.getByRole("button", { name: /^salary$/i })
+    fireEvent.click(salaryBtn)
+
+    const minInput = screen.getByLabelText(/minimum/i)
+    fireEvent.change(minInput, { target: { value: "150000" } })
+
+    const confirmBtn = screen.getByRole("button", { name: /confirm/i })
+    fireEvent.click(confirmBtn)
+
+    // Chip should be displayed with salary range
+    const activeFiltersRegion = screen.getByRole("region", { name: /active search filters/i })
+    expect(within(activeFiltersRegion).getByText(/min: \$usd 150,000/i)).toBeInTheDocument()
+  })
+
+  it("sorts jobs when selecting option in Relevance dropdown", async () => {
+    render(<Home />)
+
+    await waitFor(() => {
+      expect(screen.getByRole("table")).toBeInTheDocument()
+    })
+
+    // Open Relevance dropdown
+    const relevanceBtn = screen.getByRole("button", { name: /^relevance$/i })
+    fireEvent.click(relevanceBtn)
+
+    // Select Name A-Z
+    const nameSort = screen.getByRole("menuitem", { name: /name a-z/i })
+    fireEvent.click(nameSort)
+
+    // Button label updates to Name A-Z
+    expect(screen.getByRole("button", { name: /name a-z/i })).toBeInTheDocument()
+  })
 })

@@ -5,11 +5,6 @@ import Link from "next/link"
 import {
   Search,
   ArrowRight,
-  MapPin,
-  Clock,
-  TrendingUp,
-  DollarSign,
-  ArrowUpDown,
   ChevronDown,
   Lock,
   Unlock,
@@ -36,7 +31,7 @@ import {
 } from "@/domain/jobs"
 import { PromotedFilterChips } from "@/components/search/promoted-filter-chips"
 import { ZeroResultFallback } from "@/components/search/zero-result-fallback"
-import { cn } from "@/lib/utils"
+import { ToolbarFilters } from "@/components/search/toolbar-filters"
 
 const POPULAR_SEARCHES = [
   "AI Engineer",
@@ -51,14 +46,6 @@ const POPULAR_SEARCHES = [
   "DevOps",
   "QA",
   "Product Manager",
-]
-
-const TOOLBAR_FILTERS = [
-  { id: "location", label: "Location", icon: MapPin },
-  { id: "type", label: "Type", icon: Clock },
-  { id: "level", label: "Level", icon: TrendingUp },
-  { id: "salary", label: "Salary", icon: DollarSign },
-  { id: "relevance", label: "Relevance", icon: ArrowUpDown },
 ]
 
 function formatSalary(salary: AthynaJob["salary"]): string {
@@ -89,6 +76,8 @@ export default function Home() {
     tableFilter,
     activeChips,
     appliedFilters,
+    sortBy,
+    sortOrder,
     setSearchQuery,
     setTableFilter,
     submitHeroSearch,
@@ -96,6 +85,9 @@ export default function Home() {
     removeChip,
     clearAllChips,
     toggleFilter,
+    setSalaryFilter,
+    setLocationFilter,
+    setSort,
     applyRelaxation,
     resetAll,
   } = useSearchIntent()
@@ -260,56 +252,18 @@ export default function Home() {
                 </Button>
               </form>
 
-              {/* Filter Dropdown Pills */}
-              {TOOLBAR_FILTERS.map((filter) => {
-                const Icon = filter.icon
-                const isActive =
-                  filter.id === "location"
-                    ? activeChips.some((c) => c.type === "remote")
-                    : filter.id === "type"
-                    ? activeChips.some((c) => c.type === "employmentType")
-                    : filter.id === "level"
-                    ? activeChips.some((c) => c.type === "seniority")
-                    : false
-
-                const handleFilterClick = () => {
-                  if (filter.id === "location") {
-                    toggleFilter({ id: "remote", type: "remote", value: "true", label: "Remote" })
-                  } else if (filter.id === "type") {
-                    toggleFilter({
-                      id: "employmentType-full-time",
-                      type: "employmentType",
-                      value: "Full-time",
-                      label: "Full-time",
-                    })
-                  } else if (filter.id === "level") {
-                    toggleFilter({
-                      id: "seniority-senior",
-                      type: "seniority",
-                      value: "Senior",
-                      label: "Senior",
-                    })
-                  }
-                }
-
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={handleFilterClick}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer",
-                      isActive
-                        ? "bg-primary text-white"
-                        : "bg-surface-container hover:bg-lavender-subtle hover:text-primary text-on-surface"
-                    )}
-                  >
-                    <Icon className={cn("size-3.5", isActive ? "text-white" : "text-text-muted")} />
-                    <span>{filter.label}</span>
-                    <ChevronDown className={cn("size-3.5", isActive ? "text-white" : "text-text-muted")} />
-                  </button>
-                )
-              })}
+              {/* Filter Dropdown Menus */}
+              <ToolbarFilters
+                activeChips={activeChips}
+                appliedFilters={appliedFilters}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                toggleFilter={toggleFilter}
+                removeChip={removeChip}
+                setSalaryFilter={setSalaryFilter}
+                setLocationFilter={setLocationFilter}
+                setSort={setSort}
+              />
             </div>
 
             {/* Scope switcher */}
