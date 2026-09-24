@@ -3,11 +3,17 @@
 import { useRouter } from "next/navigation";
 import { ChevronLeftIcon } from "@athynacom/athyna-ui/icons";
 
-export function BackButton() {
+export function BackButton({ fallbackHref = "/" }: { fallbackHref?: string }) {
   const router = useRouter();
 
   const handleBackClick = () => {
-    router.back();
+    // If arriving from within Athyna, go back to preserve search filters and scroll position
+    if (window.history.length > 1 && document.referrer.includes(window.location.host)) {
+      router.back();
+    } else {
+      // Fallback for direct Google arrivals, external referrers, or new tabs
+      router.push(fallbackHref);
+    }
   };
 
   return (
@@ -20,3 +26,4 @@ export function BackButton() {
     </button>
   );
 }
+
