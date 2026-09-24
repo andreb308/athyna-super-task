@@ -36,6 +36,7 @@ import {
 } from "@/domain/jobs"
 import { PromotedFilterChips } from "@/components/search/promoted-filter-chips"
 import { ZeroResultFallback } from "@/components/search/zero-result-fallback"
+import { cn } from "@/lib/utils"
 
 const POPULAR_SEARCHES = [
   "AI Engineer",
@@ -94,17 +95,35 @@ export default function Home() {
     applyPopularSearch,
     removeChip,
     clearAllChips,
+    toggleFilter,
     applyRelaxation,
     resetAll,
   } = useSearchIntent()
 
-  const { jobs: filteredJobs, allJobs } = useJobs({ filters: appliedFilters })
+  const {
+    jobs: filteredJobs,
+    allJobs,
+    isLoading,
+    error,
+    refetch,
+  } = useJobs({ filters: appliedFilters })
 
   // Contextual fallback suggestions when search yields 0 results
   const relaxationSuggestions = React.useMemo(() => {
     if (filteredJobs.length > 0) return []
     return getRelaxationSuggestions(allJobs, appliedFilters)
   }, [allJobs, appliedFilters, filteredJobs.length])
+
+  const [tableSearchInput, setTableSearchInput] = React.useState(tableFilter)
+
+  React.useEffect(() => {
+    setTableSearchInput(tableFilter)
+  }, [tableFilter])
+
+  const handleTableSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setTableFilter(tableSearchInput)
+  }
 
   const handleHeroSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -213,31 +232,81 @@ export default function Home() {
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-4 pb-4" id="browse-roles">
         <div className="bg-surface-container-lowest rounded-2xl p-4 border border-border-subtle shadow-xs flex flex-col gap-3">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-            {/* Search input + pill filters */}
+            {/* Search input + Search button + pill filters */}
             <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-              <div className="w-full sm:w-60">
-                <Input
-                  placeholder="Search for jobs"
-                  value={tableFilter}
-                  onChange={(e) => setTableFilter(e.target.value)}
-                  icon={<Search className="size-4" />}
+              <form
+                onSubmit={handleTableSearchSubmit}
+                className="flex items-center gap-2 w-full sm:w-auto"
+              >
+                <div className="w-full sm:w-60">
+                  <Input
+                    placeholder="Search for jobs"
+                    value={tableSearchInput}
+                    onChange={(e) => setTableSearchInput(e.target.value)}
+                    icon={<Search className="size-4" />}
+                    pill
+                    className="bg-surface-container border-transparent"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="default"
+                  size="sm"
                   pill
-                  className="bg-surface-container border-transparent"
-                />
-              </div>
+                  aria-label="Search jobs"
+                  className="px-4 py-2 font-bold shadow-xs text-xs whitespace-nowrap"
+                >
+                  Search
+                </Button>
+              </form>
 
               {/* Filter Dropdown Pills */}
               {TOOLBAR_FILTERS.map((filter) => {
                 const Icon = filter.icon
+                const isActive =
+                  filter.id === "location"
+                    ? activeChips.some((c) => c.type === "remote")
+                    : filter.id === "type"
+                    ? activeChips.some((c) => c.type === "employmentType")
+                    : filter.id === "level"
+                    ? activeChips.some((c) => c.type === "seniority")
+                    : false
+
+                const handleFilterClick = () => {
+                  if (filter.id === "location") {
+                    toggleFilter({ id: "remote", type: "remote", value: "true", label: "Remote" })
+                  } else if (filter.id === "type") {
+                    toggleFilter({
+                      id: "employmentType-full-time",
+                      type: "employmentType",
+                      value: "Full-time",
+                      label: "Full-time",
+                    })
+                  } else if (filter.id === "level") {
+                    toggleFilter({
+                      id: "seniority-senior",
+                      type: "seniority",
+                      value: "Senior",
+                      label: "Senior",
+                    })
+                  }
+                }
+
                 return (
                   <button
                     key={filter.id}
                     type="button"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-surface-container hover:bg-lavender-subtle hover:text-primary text-on-surface text-xs sm:text-sm font-medium transition-colors"
+                    onClick={handleFilterClick}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer",
+                      isActive
+                        ? "bg-primary text-white"
+                        : "bg-surface-container hover:bg-lavender-subtle hover:text-primary text-on-surface"
+                    )}
                   >
-                    <Icon className="size-3.5 text-text-muted" />
+                    <Icon className={cn("size-3.5", isActive ? "text-white" : "text-text-muted")} />
                     <span>{filter.label}</span>
-                    <ChevronDown className="size-3.5 text-text-muted" />
+                    <ChevronDown className={cn("size-3.5", isActive ? "text-white" : "text-text-muted")} />
                   </button>
                 )
               })}
@@ -278,7 +347,23 @@ export default function Home() {
 
       {/* Job Listings / Zero-Result Section */}
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3">
-        {filteredJobs.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-surface-container-lowest rounded-2xl border border-border-subtle p-8 text-center animate-pulse space-y-4">
+            <div className="h-6 w-48 bg-surface-container rounded-md mx-auto" />
+            <div className="space-y-3 pt-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-14 bg-surface-container/60 rounded-xl w-full" />
+              ))}
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-surface-container-lowest rounded-2xl border border-border-subtle p-8 text-center flex flex-col items-center gap-3">
+            <p className="text-sm text-text-muted">Unable to load jobs from the Athyna API ({error.message}).</p>
+            <Button variant="default" size="sm" pill onClick={() => refetch()}>
+              Retry
+            </Button>
+          </div>
+        ) : filteredJobs.length === 0 ? (
           <ZeroResultFallback
             query={tableFilter || searchQuery}
             suggestions={relaxationSuggestions}

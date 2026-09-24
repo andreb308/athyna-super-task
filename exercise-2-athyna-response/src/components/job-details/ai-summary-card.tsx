@@ -9,24 +9,24 @@ export interface AiSummaryCardProps {
 
 export const DEFAULT_AI_SUMMARY_BULLETS = [
   {
-    label: "Core Tech & Impact",
+    label: "Core Role",
     content:
-      "Build and integrate Claude-powered automated workflows, FAQ chatbots, and contract-review tools directly into Anthropic's legal operations.",
+      "Implement Claude-driven AI solutions and integrations to automate and scale Anthropic's legal workflows.",
   },
   {
-    label: "Essential Capabilities",
+    label: "Must-Have Skills",
     content:
-      "Hands-on proficiency with LLM tools (especially Claude) combined with practical knowledge of evaluating and deploying legal tech platforms.",
+      "Proven experience deploying legal technology platforms and hands-on proficiency with LLMs (especially Claude).",
   },
   {
     label: "Work Arrangement",
     content:
-      "Hybrid setup requiring at least three days per week on-site in San Francisco or New York, with interim flexibility considered.",
+      "Hybrid schedule requiring at least three days per week in either the San Francisco or New York office.",
   },
   {
-    label: "Sponsorship & Perks",
+    label: "Compensation & Visa",
     content:
-      "Dedicated visa sponsorship support alongside unique benefits like equity donation matching, flexible hours, and generous leave.",
+      "Annual base salary of $170,000–$220,000 USD, with potential visa sponsorship provided.",
   },
 ]
 

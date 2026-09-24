@@ -1,9 +1,7 @@
 import { fetchJobs, fetchJobById } from "./api-client"
-import { MOCK_ATHYNA_JOBS } from "./mock-dataset"
-import { filterJobs } from "./query-engine"
 import type { AthynaJob, JobFilterParams } from "./schema"
 
-export type JobDataSource = "live_api" | "cache" | "offline_mock"
+export type JobDataSource = "live_api" | "cache"
 
 export interface GetJobsResult {
   jobs: AthynaJob[]
@@ -24,53 +22,44 @@ export function clearJobsCache(): void {
   jobCache.clear()
 }
 
+/**
+ * Fetches jobs directly from the Athyna Public Jobs API (/api/public/jobs).
+ * Caches results in memory for sub-millisecond query performance.
+ */
 export async function getJobs(
-  params: JobFilterParams = {},
-  mockJobs: AthynaJob[] = MOCK_ATHYNA_JOBS
+  params: JobFilterParams = {}
 ): Promise<GetJobsResult> {
   const cacheKey = JSON.stringify(params)
 
-  try {
-    const response = await fetchJobs(params)
-    queryCache.set(cacheKey, {
-      jobs: response.data,
-      total: response.total,
-    })
-    response.data.forEach((job) => jobCache.set(job.id, job))
-
+  const cached = queryCache.get(cacheKey)
+  if (cached) {
     return {
-      jobs: response.data,
-      total: response.total,
-      source: "live_api",
+      jobs: cached.jobs,
+      total: cached.total,
+      source: "cache",
     }
-  } catch (err) {
-    const cached = queryCache.get(cacheKey)
-    if (cached) {
-      return {
-        jobs: cached.jobs,
-        total: cached.total,
-        source: "cache",
-      }
-    }
+  }
 
-    if (process.env.NODE_ENV !== "test") {
-      console.warn(
-        `[JobsRepository] Live API unavailable (${(err as Error)?.message || err}). Falling back to local dataset.`
-      )
-    }
+  const response = await fetchJobs(params)
+  queryCache.set(cacheKey, {
+    jobs: response.data,
+    total: response.total,
+  })
+  response.data.forEach((job) => jobCache.set(job.id, job))
 
-    const filtered = filterJobs(mockJobs, params)
-    return {
-      jobs: filtered,
-      total: filtered.length,
-      source: "offline_mock",
-    }
+  return {
+    jobs: response.data,
+    total: response.total,
+    source: "live_api",
   }
 }
 
+/**
+ * Fetches a single job directly from the Athyna Public Jobs API (/api/public/jobs/{id}).
+ * Checks in-memory cache first before making the live HTTP request.
+ */
 export async function getJobById(
-  id: string,
-  mockJobs: AthynaJob[] = MOCK_ATHYNA_JOBS
+  id: string
 ): Promise<GetJobByIdResult> {
   const cached = jobCache.get(id)
   if (cached) {
@@ -80,28 +69,13 @@ export async function getJobById(
     }
   }
 
-  try {
-    const job = await fetchJobById(id)
-    jobCache.set(id, job)
-    return {
-      job,
-      source: "live_api",
-    }
-  } catch (err) {
-    if (process.env.NODE_ENV !== "test") {
-      console.warn(
-        `[JobsRepository] Live API unavailable for job ${id} (${(err as Error)?.message || err}). Falling back to local dataset.`
-      )
-    }
-
-    const matched = mockJobs.find((j) => j.id === id || j.slug === id)
-    if (!matched) {
-      throw new Error(`Job not found: ${id}`)
-    }
-
-    return {
-      job: matched,
-      source: "offline_mock",
-    }
+  const job = await fetchJobById(id)
+  jobCache.set(id, job)
+  if (job.slug) {
+    jobCache.set(job.slug, job)
+  }
+  return {
+    job,
+    source: "live_api",
   }
 }

@@ -24,10 +24,25 @@ export interface SimilarJobClickedEvent {
   position: number
 }
 
+export interface SearchQuerySubmittedEvent {
+  rawQuery: string
+  extractedFilters: Record<string, unknown>
+  resultCount: number
+}
+
+export interface FilterChipToggledEvent {
+  filterType: string
+  filterValue: string
+  action: "add" | "remove"
+  source: "auto_promote" | "manual"
+}
+
 type TelemetryEventMap = {
   job_detail_viewed: JobDetailViewedEvent
   apply_cta_clicked: ApplyCtaClickedEvent
   similar_job_clicked: SimilarJobClickedEvent
+  search_query_submitted: SearchQuerySubmittedEvent
+  filter_chip_toggled: FilterChipToggledEvent
 }
 
 export type TelemetryEventName = keyof TelemetryEventMap

@@ -1,9 +1,16 @@
-import { renderHook, act } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { renderHook, act, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useSearchIntent } from "../use-search-intent"
 import { useJobs } from "../use-jobs"
+import * as repo from "../jobs-repository"
+import type { AthynaJob } from "../schema"
 
 describe("Domain React Hooks", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    repo.clearJobsCache()
+  })
+
   describe("useSearchIntent", () => {
     it("submits hero search and extracts intent chips", () => {
       const { result } = renderHook(() => useSearchIntent())
@@ -67,11 +74,41 @@ describe("Domain React Hooks", () => {
   })
 
   describe("useJobs", () => {
-    it("returns jobs initialized with mock dataset and supports filtering", () => {
+    it("fetches and returns jobs via a single API call from repository", async () => {
+      const sampleJobs: AthynaJob[] = [
+        {
+          id: "j-1",
+          slug: "remote-ai-engineer",
+          title: "Remote AI Engineer",
+          url: "https://develop.api.athyna.com/api/public/jobs/j-1",
+          applicationUrl: "https://athyna.com/apply/j-1",
+          company: { name: "Athyna Partner", logoUrl: null, websiteUrl: null },
+          location: { city: null, country: null, locality: null, isRemote: true },
+          employmentType: "Full-time",
+          seniority: "Senior",
+          category: "Engineering",
+          skills: ["AI", "React"],
+          overview: "Work on AI systems.",
+          description: "Full description...",
+          publishedAt: "2026-09-24T00:00:00Z",
+          matchIndex: 95,
+        },
+      ]
+
+      vi.spyOn(repo, "getJobs").mockResolvedValueOnce({
+        jobs: sampleJobs,
+        total: 1,
+        source: "live_api",
+      })
+
       const { result } = renderHook(() => useJobs({ filters: { remote: true } }))
 
-      expect(result.current.jobs.length).toBeGreaterThan(0)
-      expect(result.current.jobs.every((j) => j.location.isRemote)).toBe(true)
+      await waitFor(() => {
+        expect(result.current.jobs).toHaveLength(1)
+        expect(result.current.jobs[0].title).toBe("Remote AI Engineer")
+        expect(result.current.source).toBe("live_api")
+        expect(result.current.isLoading).toBe(false)
+      })
     })
   })
 })

@@ -3,7 +3,6 @@
 import * as React from "react"
 import type { AthynaJob, JobFilterParams } from "./schema"
 import { getJobs, type JobDataSource } from "./jobs-repository"
-import { MOCK_ATHYNA_JOBS } from "./mock-dataset"
 import { filterJobs } from "./query-engine"
 
 export interface UseJobsOptions {
@@ -21,30 +20,36 @@ export interface UseJobsResult {
   refetch: () => Promise<void>
 }
 
+/**
+ * Hook to fetch jobs from the Athyna Public Jobs API via a single API call.
+ * Contains no mock data; queries the live endpoints exclusively.
+ */
 export function useJobs(options: UseJobsOptions = {}): UseJobsResult {
-  const { filters, initialData = MOCK_ATHYNA_JOBS } = options
+  const { filters, initialData = [] } = options
 
-  // Initial immediate state provides zero-latency offline resilience
   const [rawJobs, setRawJobs] = React.useState<AthynaJob[]>(initialData)
-  const [source, setSource] = React.useState<JobDataSource>("offline_mock")
-  const [isLoading, setIsLoading] = React.useState<boolean>(false)
+  const [total, setTotal] = React.useState<number>(initialData.length)
+  const [source, setSource] = React.useState<JobDataSource>("live_api")
+  const [isLoading, setIsLoading] = React.useState<boolean>(initialData.length === 0)
   const [error, setError] = React.useState<Error | null>(null)
+
+  const filterKey = React.useMemo(() => JSON.stringify(filters || {}), [filters])
 
   const loadJobs = React.useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await getJobs({}, initialData)
-      if (result.jobs.length > 0) {
-        setRawJobs(result.jobs)
-        setSource(result.source)
-      }
+      const result = await getJobs(filters || {})
+      setRawJobs(result.jobs)
+      setTotal(result.total)
+      setSource(result.source)
     } catch (err) {
       setError(err as Error)
     } finally {
       setIsLoading(false)
     }
-  }, [initialData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey])
 
   React.useEffect(() => {
     loadJobs()
@@ -58,7 +63,7 @@ export function useJobs(options: UseJobsOptions = {}): UseJobsResult {
   return {
     jobs,
     allJobs: rawJobs,
-    total: rawJobs.length,
+    total,
     source,
     isLoading,
     error,

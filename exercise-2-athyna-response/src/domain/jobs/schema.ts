@@ -18,6 +18,7 @@ export const athynaJobExperienceSchema = z
     minYears: z.number().nullable().optional().default(null),
     maxYears: z.number().nullable().optional().default(null),
   })
+  .nullable()
   .optional()
 
 export const athynaJobSalarySchema = z
@@ -29,15 +30,14 @@ export const athynaJobSalarySchema = z
   })
   .nullable()
   .optional()
-  .default(null)
 
 export const athynaJobSchema = z
   .object({
     id: z.string(),
-    slug: z.string().optional(),
+    slug: z.string().nullable().optional(),
     title: z.string(),
-    url: z.string().optional().default(""),
-    applicationUrl: z.string().default(""),
+    url: z.string().nullable().optional().default(""),
+    applicationUrl: z.string().nullable().optional().default(""),
     company: athynaJobCompanySchema.default({
       name: "Athyna Partner",
       logoUrl: null,
@@ -49,26 +49,42 @@ export const athynaJobSchema = z
       locality: null,
       isRemote: false,
     }),
-    employmentType: z.string().default("Full-time"),
-    seniority: z.string().default("Mid-Level"),
-    category: z.string().nullable().optional().default(null),
+    employmentType: z.string().nullable().optional().default("Full-time"),
+    seniority: z.string().nullable().optional().default("Not specified"),
+    category: z.string().nullable().optional(),
     experience: athynaJobExperienceSchema,
     salary: athynaJobSalarySchema,
     skills: z.array(z.string()).default([]),
-    overview: z.string().nullable().optional().default(null),
-    description: z.string().default(""),
-    publishedAt: z.string(),
-    updatedAt: z.string().optional().default(new Date().toISOString()),
+    overview: z.string().nullable().optional(),
+    description: z.string().nullable().optional().default(""),
+    publishedAt: z.string().nullable().optional().default(() => new Date().toISOString()),
+    updatedAt: z.string().nullable().optional(),
     matchIndex: z.number().optional().default(95),
   })
   .transform((job) => ({
     ...job,
     slug: job.slug || job.id,
-    url: job.url || `https://jobs.athyna.com/jobs/${job.id}`,
-    applicationUrl: job.applicationUrl || `https://jobs.athyna.com/jobs/${job.id}/apply`,
+    url: job.url || `https://develop.api.athyna.com/api/public/jobs/${job.id}`,
+    applicationUrl:
+      job.applicationUrl || job.url || `https://jobs.athyna.com/jobs/${job.id}/apply`,
+    employmentType: job.employmentType || "Full-time",
+    seniority: job.seniority || "Not specified",
+    description: job.description || "",
+    publishedAt: job.publishedAt || new Date().toISOString(),
   }))
 
 export type AthynaJob = z.infer<typeof athynaJobSchema>
+
+export const athynaPaginationSchema = z
+  .object({
+    pageNumber: z.number().optional().default(1),
+    pageSize: z.number().optional().default(20),
+    totalItems: z.number().optional(),
+    totalPages: z.number().optional(),
+    hasNextPage: z.boolean().optional(),
+    hasPreviousPage: z.boolean().optional(),
+  })
+  .optional()
 
 export const athynaJobsResponseSchema = z
   .union([
@@ -79,19 +95,28 @@ export const athynaJobsResponseSchema = z
       pageSize: jobs.length,
       totalPages: 1,
     })),
-    z.object({
-      data: z.array(athynaJobSchema),
-      total: z.number().optional(),
-      page: z.number().optional().default(1),
-      pageSize: z.number().optional().default(20),
-      totalPages: z.number().optional(),
-    }).transform((res) => ({
-      data: res.data,
-      total: res.total ?? res.data.length,
-      page: res.page,
-      pageSize: res.pageSize,
-      totalPages: res.totalPages ?? Math.ceil((res.total ?? res.data.length) / (res.pageSize || 20)),
-    })),
+    z
+      .object({
+        data: z.array(athynaJobSchema),
+        pagination: athynaPaginationSchema,
+        total: z.number().optional(),
+        page: z.number().optional(),
+        pageSize: z.number().optional(),
+        totalPages: z.number().optional(),
+      })
+      .transform((res) => ({
+        data: res.data,
+        total: res.pagination?.totalItems ?? res.total ?? res.data.length,
+        page: res.pagination?.pageNumber ?? res.page ?? 1,
+        pageSize: res.pagination?.pageSize ?? res.pageSize ?? 20,
+        totalPages:
+          res.pagination?.totalPages ??
+          res.totalPages ??
+          Math.ceil(
+            (res.pagination?.totalItems ?? res.total ?? res.data.length) /
+              (res.pagination?.pageSize ?? res.pageSize ?? 20)
+          ),
+      })),
   ])
 
 export type AthynaJobsResponse = z.infer<typeof athynaJobsResponseSchema>

@@ -106,12 +106,23 @@ describe("Athyna Jobs Zod Schemas", () => {
     expect(parsed.data[0].id).toBe("job-1")
   })
 
-  it("ensures MOCK_ATHYNA_JOBS has <= 20 items and all pass schema validation", async () => {
-    const { MOCK_ATHYNA_JOBS } = await import("../mock-dataset")
-    expect(MOCK_ATHYNA_JOBS.length).toBeGreaterThan(0)
-    expect(MOCK_ATHYNA_JOBS.length).toBeLessThanOrEqual(20)
-    for (const job of MOCK_ATHYNA_JOBS) {
-      expect(athynaJobSchema.parse(job)).toBeDefined()
+  it("correctly parses live API response with nested pagination object", () => {
+    const liveApiResponse = {
+      data: [validJob],
+      pagination: {
+        pageNumber: 1,
+        pageSize: 20,
+        totalItems: 31920,
+        totalPages: 1596,
+        hasNextPage: true,
+        hasPreviousPage: false,
+      },
     }
+    const parsed = athynaJobsResponseSchema.parse(liveApiResponse)
+    expect(parsed.data).toHaveLength(1)
+    expect(parsed.total).toBe(31920)
+    expect(parsed.page).toBe(1)
+    expect(parsed.pageSize).toBe(20)
+    expect(parsed.totalPages).toBe(1596)
   })
 })
