@@ -11,6 +11,10 @@ function normalize(str?: string | null): string {
   return (str || "").toLowerCase().trim()
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")
+}
+
 export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJob[] {
   if (!params) return jobs
 
@@ -26,7 +30,7 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
     ? [normalize(params.skills)]
     : []
 
-  return jobs.filter((job) => {
+  let filtered = jobs.filter((job) => {
     // 1. Remote filter
     if (params.remote !== undefined && params.remote !== false) {
       if (!job.location.isRemote) {
@@ -52,11 +56,15 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
       }
     }
 
-    // 4. Skills filter (job must include at least all requested skills, or match skill array)
+    // 4. Skills filter (exact match or whole-word match to avoid false positives like "HTML" matching "ml")
     if (skillArray.length > 0) {
       const jobSkills = job.skills.map((s) => normalize(s))
       const matchesAllSkills = skillArray.every((reqSkill) =>
-        jobSkills.some((js) => js.includes(reqSkill) || reqSkill.includes(js))
+        jobSkills.some((jobSkill) => {
+          if (jobSkill === reqSkill) return true
+          const wordRegex = new RegExp(`\\b${escapeRegex(reqSkill)}\\b`, "i")
+          return wordRegex.test(jobSkill)
+        })
       )
       if (!matchesAllSkills) {
         return false
@@ -71,7 +79,10 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
       return false
     }
 
-    // 6. Salary
+    // 6. Salary filters
+    if (params.salary !== undefined) {
+      if (job.salary?.max && job.salary.max < params.salary) return false
+    }
     if (params.minSalary !== undefined && job.salary?.max && job.salary.max < params.minSalary) {
       return false
     }
@@ -79,7 +90,16 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
       return false
     }
 
-    // 7. Free-text residual q
+    // 7. Published date filter
+    if (params.publishedSince) {
+      const sinceDate = new Date(params.publishedSince)
+      const jobDate = new Date(job.publishedAt)
+      if (!isNaN(sinceDate.getTime()) && !isNaN(jobDate.getTime()) && jobDate < sinceDate) {
+        return false
+      }
+    }
+
+    // 8. Free-text residual q (matches title, category, skills, company name)
     if (q) {
       const inTitle = normalize(job.title).includes(q)
       const inCompany = normalize(job.company.name).includes(q)
@@ -95,6 +115,34 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
 
     return true
   })
+
+  // 9. Sorting
+  if (params.sortBy) {
+    const sortMultiplier = params.sortOrder === "asc" ? 1 : -1
+    filtered = [...filtered].sort((a, b) => {
+      if (params.sortBy === "publishedAt") {
+        return (new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()) * sortMultiplier
+      }
+      if (params.sortBy === "title") {
+        return a.title.localeCompare(b.title) * sortMultiplier
+      }
+      if (params.sortBy === "salary") {
+        const salaryA = a.salary?.max ?? a.salary?.min ?? 0
+        const salaryB = b.salary?.max ?? b.salary?.min ?? 0
+        return (salaryA - salaryB) * sortMultiplier
+      }
+      return 0
+    })
+  }
+
+  // 10. Pagination
+  if (params.pageSize !== undefined && params.pageSize > 0) {
+    const pageNum = params.pageNumber && params.pageNumber > 0 ? params.pageNumber : 1
+    const start = (pageNum - 1) * params.pageSize
+    filtered = filtered.slice(start, start + params.pageSize)
+  }
+
+  return filtered
 }
 
 export function getRelaxationSuggestions(
@@ -103,74 +151,55 @@ export function getRelaxationSuggestions(
 ): RelaxationSuggestion[] {
   const suggestions: RelaxationSuggestion[] = []
 
-  // Check relaxing q
-  if (params.q) {
-    const relaxed: JobFilterParams = { ...params, q: undefined }
-    const count = filterJobs(jobs, relaxed).length
-    if (count > 0) {
-      suggestions.push({
-        filterKey: "q",
-        label: `Remove keyword "${params.q}"`,
-        relaxedFilters: relaxed,
-        potentialCount: count,
-      })
-    }
+  type Dimension = {
+    key: "q" | "remote" | "seniority" | "employmentType" | "skills"
+    hasFilter: boolean
+    getLabel: () => string
   }
 
-  // Check relaxing remote
-  if (params.remote) {
-    const relaxed: JobFilterParams = { ...params, remote: undefined }
-    const count = filterJobs(jobs, relaxed).length
-    if (count > 0) {
-      suggestions.push({
-        filterKey: "remote",
-        label: "Include on-site and hybrid roles",
-        relaxedFilters: relaxed,
-        potentialCount: count,
-      })
-    }
-  }
+  const dimensions: Dimension[] = [
+    {
+      key: "q",
+      hasFilter: Boolean(params.q),
+      getLabel: () => `Remove keyword "${params.q}"`,
+    },
+    {
+      key: "remote",
+      hasFilter: Boolean(params.remote),
+      getLabel: () => "Include on-site and hybrid roles",
+    },
+    {
+      key: "seniority",
+      hasFilter: Boolean(params.seniority),
+      getLabel: () => `Search across all experience levels (relax "${params.seniority}")`,
+    },
+    {
+      key: "employmentType",
+      hasFilter: Boolean(params.employmentType),
+      getLabel: () => `Search all job types (relax "${params.employmentType}")`,
+    },
+    {
+      key: "skills",
+      hasFilter: Boolean(params.skills && (Array.isArray(params.skills) ? params.skills.length > 0 : true)),
+      getLabel: () => {
+        const skillName = Array.isArray(params.skills) ? params.skills.join(", ") : params.skills
+        return `Search without skill requirement (${skillName})`
+      },
+    },
+  ]
 
-  // Check relaxing seniority
-  if (params.seniority) {
-    const relaxed: JobFilterParams = { ...params, seniority: undefined }
-    const count = filterJobs(jobs, relaxed).length
-    if (count > 0) {
-      suggestions.push({
-        filterKey: "seniority",
-        label: `Search across all experience levels (relax "${params.seniority}")`,
-        relaxedFilters: relaxed,
-        potentialCount: count,
-      })
-    }
-  }
-
-  // Check relaxing employmentType
-  if (params.employmentType) {
-    const relaxed: JobFilterParams = { ...params, employmentType: undefined }
-    const count = filterJobs(jobs, relaxed).length
-    if (count > 0) {
-      suggestions.push({
-        filterKey: "employmentType",
-        label: `Search all job types (relax "${params.employmentType}")`,
-        relaxedFilters: relaxed,
-        potentialCount: count,
-      })
-    }
-  }
-
-  // Check relaxing skills
-  if (params.skills && (Array.isArray(params.skills) ? params.skills.length > 0 : true)) {
-    const relaxed: JobFilterParams = { ...params, skills: undefined }
-    const count = filterJobs(jobs, relaxed).length
-    if (count > 0) {
-      const skillName = Array.isArray(params.skills) ? params.skills.join(", ") : params.skills
-      suggestions.push({
-        filterKey: "skills",
-        label: `Search without skill requirement (${skillName})`,
-        relaxedFilters: relaxed,
-        potentialCount: count,
-      })
+  for (const dim of dimensions) {
+    if (dim.hasFilter) {
+      const relaxed: JobFilterParams = { ...params, [dim.key]: undefined }
+      const count = filterJobs(jobs, relaxed).length
+      if (count > 0) {
+        suggestions.push({
+          filterKey: dim.key,
+          label: dim.getLabel(),
+          relaxedFilters: relaxed,
+          potentialCount: count,
+        })
+      }
     }
   }
 

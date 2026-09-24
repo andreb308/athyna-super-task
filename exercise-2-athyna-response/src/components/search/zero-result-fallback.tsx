@@ -4,6 +4,7 @@ import * as React from "react"
 import { SearchX, RotateCcw, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { RelaxationSuggestion } from "@/domain/jobs"
+import { cn } from "@/lib/utils"
 
 interface ZeroResultFallbackProps {
   query?: string
@@ -18,11 +19,14 @@ export function ZeroResultFallback({
   suggestions,
   onSelectSuggestion,
   onResetAll,
-  className = "",
+  className,
 }: ZeroResultFallbackProps) {
   return (
     <div
-      className={`w-full py-12 px-6 flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-2xl border border-border-subtle shadow-xs ${className}`}
+      className={cn(
+        "w-full py-12 px-6 flex flex-col items-center justify-center text-center bg-surface-container-lowest rounded-2xl border border-border-subtle shadow-xs",
+        className
+      )}
       role="status"
       aria-live="polite"
     >
@@ -30,11 +34,11 @@ export function ZeroResultFallback({
         <SearchX className="size-7" />
       </div>
 
-      <h3 className="font-headline-sm text-xl font-bold text-on-surface tracking-tight mb-2">
+      <h3 className="text-xl font-bold text-on-surface tracking-tight mb-2">
         No matching roles found
       </h3>
 
-      <p className="font-body-md text-sm text-on-surface-variant max-w-md mb-6">
+      <p className="text-sm text-on-surface-variant max-w-md mb-6 leading-relaxed">
         {query ? (
           <>
             We couldn&apos;t find roles matching <span className="font-semibold text-on-surface">&quot;{query}&quot;</span> with your current filters.

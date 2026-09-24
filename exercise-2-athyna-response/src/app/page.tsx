@@ -183,6 +183,7 @@ export default function Home() {
       telemetry.trackFilterChipToggled({
         filter_type: chip.type,
         filter_value: chip.value,
+        action: "add",
         source: "search_auto_promote",
       })
     }
@@ -204,6 +205,7 @@ export default function Home() {
     telemetry.trackFilterChipToggled({
       filter_type: "popular_search",
       filter_value: term,
+      action: "add",
       source: "manual_click",
     })
     document.getElementById("browse-roles")?.scrollIntoView?.({ behavior: "smooth" })
@@ -215,6 +217,7 @@ export default function Home() {
     telemetry.trackFilterChipToggled({
       filter_type: chip.type,
       filter_value: chip.value,
+      action: "remove",
       source: "manual_click",
     })
   }

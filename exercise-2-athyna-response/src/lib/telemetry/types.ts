@@ -14,6 +14,7 @@ export interface FilterChipToggledEvent {
   properties: {
     filter_type: string
     filter_value: string
+    action?: "add" | "remove"
     source: "search_auto_promote" | "manual_click"
   }
 }
@@ -64,6 +65,7 @@ export interface TelemetryContextValue {
   trackFilterChipToggled: (props: {
     filter_type: string
     filter_value: string
+    action?: "add" | "remove"
     source: "search_auto_promote" | "manual_click"
   }) => void
   trackJobDetailViewed: (props: {

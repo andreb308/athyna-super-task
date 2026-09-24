@@ -72,6 +72,7 @@ export function TelemetryProvider({
     (props: {
       filter_type: string
       filter_value: string
+      action?: "add" | "remove"
       source: "search_auto_promote" | "manual_click"
     }) => {
       track({

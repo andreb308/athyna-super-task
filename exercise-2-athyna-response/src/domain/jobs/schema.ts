@@ -106,6 +106,7 @@ export interface JobFilterParams {
   country?: string
   minSalary?: number
   maxSalary?: number
+  salary?: number
   publishedSince?: string
   sortBy?: "publishedAt" | "salary" | "title"
   sortOrder?: "asc" | "desc"

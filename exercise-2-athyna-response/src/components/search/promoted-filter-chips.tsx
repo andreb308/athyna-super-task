@@ -3,6 +3,7 @@
 import * as React from "react"
 import { X, Sparkles } from "lucide-react"
 import type { FilterChip } from "@/domain/jobs"
+import { cn } from "@/lib/utils"
 
 interface PromotedFilterChipsProps {
   chips: FilterChip[]
@@ -15,7 +16,7 @@ export function PromotedFilterChips({
   chips,
   onRemoveChip,
   onClearAll,
-  className = "",
+  className,
 }: PromotedFilterChipsProps) {
   if (!chips || chips.length === 0) {
     return null
@@ -23,7 +24,7 @@ export function PromotedFilterChips({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-2 py-2 px-1 ${className}`}
+      className={cn("flex flex-wrap items-center gap-2 py-2 px-1", className)}
       role="region"
       aria-label="Active search filters"
     >

@@ -32,6 +32,7 @@ export class AthynaApiClient {
     if (params.country) searchParams.set("country", params.country)
     if (params.minSalary !== undefined) searchParams.set("minSalary", String(params.minSalary))
     if (params.maxSalary !== undefined) searchParams.set("maxSalary", String(params.maxSalary))
+    if (params.salary !== undefined) searchParams.set("salary", String(params.salary))
     if (params.publishedSince) searchParams.set("publishedSince", params.publishedSince)
     if (params.sortBy) searchParams.set("sortBy", params.sortBy)
     if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder)

@@ -112,4 +112,9 @@ describe("Search Intent Parser", () => {
     expect(result.chips).toEqual([])
     expect(result.skills).toEqual([])
   })
+
+  it("parses representative query 'data engineer' preserving residual keyword search", () => {
+    const result = parseSearchIntent("data engineer")
+    expect(result.q).toBe("data engineer")
+  })
 })
