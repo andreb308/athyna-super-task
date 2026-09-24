@@ -4,6 +4,16 @@
 
 ---
 
+## 🌐 Live Demo
+
+> [!TIP]
+> **Check out the live application:**
+> 🔗 **[https://andre-athyna-super-task.vercel.app/](https://andre-athyna-super-task.vercel.app/)**
+>
+> The web application is deployed to production on Vercel with zero configuration required, fully connected to Athyna's API.
+
+---
+
 ## 📹 Feature Walkthrough Recording
 
 > [!IMPORTANT]
@@ -26,7 +36,7 @@
 | Deliverable | File / Directory | Description |
 | :--- | :--- | :--- |
 | **Exercise 1: Diagnosis & Proposal** | [`SCOPING.md`](./SCOPING.md) | 500-word written response analyzing the analytics snapshot, defining scope, non-goals, and paired metrics |
-| **Exercise 2: Web Application** | [`exercise-2-athyna-response/`](./exercise-2-athyna-response/) | Next.js 15 (Turbopack, React 19, TypeScript, Tailwind CSS) job board client with zero-config live API integration |
+| **Exercise 2: Web Application** | [`exercise-2-athyna-response/`](./exercise-2-athyna-response/) | Next.js 15 (Turbopack, React 19, TypeScript, Tailwind CSS) job board client with zero-config live API integration ([Live Demo](https://andre-athyna-super-task.vercel.app/)) |
 | **Exercise 3: PR Review** | [`PR_REVIEW.md`](./PR_REVIEW.md) *(or [`exercise-3-pr-review/`](./exercise-3-pr-review/))* | Diagnosis and product-level reasoning for the direct-arrival "Back to jobs" history bug |
 | **AI Tooling Transparency** | [`AI_USAGE.md`](./AI_USAGE.md) | Transparent accounting of AI tools used, workflows, and productivity gains |
 | **Architectural Decision Records** | [`docs/adr/`](./docs/adr/) | 11 ADRs (0001–0011) detailing high-intent scope, search intent parser, mobile retention, telemetry, Next.js framework, toolbar filters, smart back navigation, and guest persistence |
@@ -37,6 +47,8 @@
 ## 🚀 Setup & Running Instructions
 
 The application is built with **Next.js 15 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS v4**. It integrates out of the box with Athyna's live development API (`https://develop.api.athyna.com`) with zero environment configuration required.
+
+> 💡 **Prefer not to run locally?** You can test the production deployment directly at [https://andre-athyna-super-task.vercel.app/](https://andre-athyna-super-task.vercel.app/).
 
 ### Prerequisites
 - **Node.js**: `v18.18.0` or higher (`v20.x` or `v22.x` recommended)
@@ -108,12 +120,12 @@ If given an additional cycle, here are the four highest-leverage improvements to
    - Build automated funnel retention dashboards segmenting mobile vs. desktop conversion rates and direct-arrival retention.
 
 2. **Backend Search & Typo-Tolerant Indexing:**
-   - Migrate token extraction to the backend search service with fuzzy matching (Levenshtein distance) and synonym expansion (e.g., `"FE"` → `"Frontend"`, `"Node"` → `"Node.js"`).
+   - Improve token extraction to the backend search service with better matching, better synonym expansion (e.g., `"FE"` → `"Frontend"`, `"Node"` → `"Node.js"`), and more
    - Leverage vector embeddings for hybrid keyword + semantic search.
 
-3. **Guest Saved Jobs & Frictionless Bookmarking:**
-   - Implement client-side `localStorage` bookmarking for guest candidates so they can save roles without hitting the 74% drop-off sign-up wall.
-   - Introduce an optional lightweight 1-click email magic-link alert service to re-engage candidates.
+3. **Client/Server Component Checking + Loading.tsx:**
+   - Check for improvements to make sure as much of the page is being pre-loaded from the server and that we are not using client components where not needed. 
+   - Add loading.tsx and error.tsx files to the appropriate locations to provide a better user experience.
 
 4. **Automated Cross-Device E2E Testing:**
    - Introduce a Playwright test suite validating mobile viewports (iPhone, Android) to automatically assert that the sticky action bar and post-apply modal maintain correct touch targets and z-indexes across viewports.
