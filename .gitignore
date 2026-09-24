@@ -1,0 +1,6 @@
+# Exclude exercise-2 folder
+exercise-2-athyna-response/
+
+# OS and temporary files
+.DS_Store
+*.log
