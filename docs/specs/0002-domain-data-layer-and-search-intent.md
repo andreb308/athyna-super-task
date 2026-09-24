@@ -96,4 +96,4 @@ Build a domain data layer and client-side intent engine aligned with the Athyna 
 
 ## Further Notes
 
-The intent parser is designed to run synchronously in < 2ms, enabling instant feedback in the search UI without throttling user input.
+The intent parser runs synchronously on the client, enabling instant feedback in the search UI without throttling user input or requiring debounced network queries.

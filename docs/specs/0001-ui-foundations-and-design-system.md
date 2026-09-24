@@ -10,6 +10,7 @@ Establish the complete Syntropic Matrix design system and accessible component f
 - Core UI component primitives based on the shadcn architecture (Button, Badge, Card, Table, Tabs, Input, and Separator).
 - Branded SVG assets including the official Athyna logo and playful 8-bit retro pixel motifs (clusters, cursor pointer, and robot mascot).
 - A unified responsive application shell with a backdrop-blur fixed header and comprehensive footer navigation.
+- A foundational telemetry context provider and event dispatcher based on ADR 0004 for measuring funnel conversions.
 
 ## User Stories
 
@@ -41,7 +42,8 @@ Establish the complete Syntropic Matrix design system and accessible component f
   - *Input*: Accessible input field with support for icon adornments.
   - *Separator*: Vertical and horizontal rule dividers.
 - **Brand & Retro Asset Integration**: Inline crisp SVG vectors for the Athyna wordmark, the pastel pixel cluster, the 8-bit cursor motif, and the retro space invader robot mascot to guarantee zero-latency rendering and prevent external image network dependencies.
-- **Application Shell**: A fixed top navigation bar utilizing backdrop blur (`backdrop-filter: blur(16px)`) with sticky positioning, and a multi-column footer containing company links, social icons, and newsletter signup.
+- **Application Shell**: A fixed top navigation bar utilizing backdrop blur (`backdrop-filter: blur(16px)`) with sticky positioning, and a multi-column footer containing company links and social icons.
+- **Telemetry Event Foundation**: A typed client-side telemetry provider and dispatcher capturing interactions defined in ADR 0004 (`job_detail_viewed`, `apply_cta_clicked`, `similar_job_clicked`, `search_query_submitted`, `filter_chip_toggled`) with a built-in debug logger for local verification.
 
 ## Testing Decisions
 
@@ -49,13 +51,14 @@ Establish the complete Syntropic Matrix design system and accessible component f
 - **Seams Tested**:
   - *Component Rendering & Accessibility Seam*: Verify Buttons, Badges, Tabs, and Inputs render with semantic ARIA roles (`role="button"`, `role="tab"`, `aria-selected`, `aria-label`).
   - *Layout & Shell Seam*: Verify Header and Footer render brand navigation links and adhere to responsive layout rules across mobile and desktop viewport sizes.
+  - *Telemetry Dispatch Seam*: Verify that foundation interactions trigger typed telemetry events.
 - **Prior Art**: Next.js App Router root layout integration testing and React Testing Library accessible queries (`getByRole`, `getByText`).
 
 ## Out of Scope
 
 - Dark mode theme toggling (the Syntropic Matrix specification focuses on high-clarity light mode).
 - Interactive user authentication flows on the Login/Sign-up buttons (links will act as guest entry points).
-- Third-party analytics script loading in the layout head.
+- Paid third-party hosted analytics services (telemetry is captured via the client dispatcher and local inspector per SCOPING.md and ADR 0004).
 
 ## Further Notes
 

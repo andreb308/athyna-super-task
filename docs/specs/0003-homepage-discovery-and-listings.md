@@ -26,6 +26,7 @@ Rebuild the core Homepage - Athyna discovery and listings experience matching St
 11. As a candidate, I want to see a verified counter showing the number of matching remote jobs updated in real-time, so that I know the inventory is fresh.
 12. As a candidate reaching the end of the initial preview listings, I want to see a full-width Mint Emerald "Unlock all jobs" button, so that I have a clear and compelling conversion path to access the full catalog.
 13. As a candidate ready to apply, I want clicking "Apply now" on any listing to open the application link directly in a new tab, so that I do not lose my place on the Athyna board.
+14. As a candidate wanting full role details, I want to click on a job card or title to navigate directly to its dedicated job detail view (`/jobs/[id]`), so that I can evaluate responsibilities, requirements, and similar roles.
 
 ## Implementation Decisions
 
@@ -38,12 +39,12 @@ Rebuild the core Homepage - Athyna discovery and listings experience matching St
 - **Filter & Controls Toolbar**:
   - Container with rounded-2xl geometry and subtle drop shadow.
   - Real-time search input integrated with client-side filtering logic.
-  - Five filter dropdown pills with leading category icons and trailing chevron glyphs.
+  - Five filter dropdown pills with leading category icons and trailing chevron glyphs (Location, Type, Level, Salary, Relevance).
   - Scope switcher dropdown default set to "All jobs".
   - Real-time match count label accompanied by an active green status indicator dot.
 - **Dual-Mode Listings Architecture**:
-  - *Desktop (>= 1024px)*: 12-column grid system dividing columns: Role name & company (4 cols), Match index & unlock chip (2 cols), Company (1 col), Location (2 cols), Details badges (1 col), Salary (1 col), Action button (1 col).
-  - *Mobile (< 768px)*: Card view stacking role title, company avatar, location, qualification chips, and full-width action button.
+  - *Desktop (>= 1024px)*: 12-column grid system dividing columns: Role name & company (4 cols), Match index & unlock chip (2 cols), Company (1 col), Location (2 cols), Details badges (1 col), Salary (1 col), Action button (1 col). Role title links to `/jobs/[id]`.
+  - *Mobile (< 768px)*: Card view stacking role title, company avatar, location, qualification chips, and full-width action button. Entire card header navigates to `/jobs/[id]`.
 - **Paywall / Growth Conversion Bar**:
   - Full-width container positioned at the bottom of the table with rounded-full Mint Emerald button (`#2ED197`), hover brightness shift, and unlock icon.
 - **Micro-Interactions**:
