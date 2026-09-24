@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Sparkles } from "lucide-react"
+import * as React from "react";
+import { Sparkles } from "lucide-react";
 
 export interface AiSummaryCardProps {
-  className?: string
+  className?: string;
 }
 
 export const DEFAULT_AI_SUMMARY_BULLETS = [
@@ -28,12 +28,12 @@ export const DEFAULT_AI_SUMMARY_BULLETS = [
     content:
       "Annual base salary of $170,000–$220,000 USD, with potential visa sponsorship provided.",
   },
-]
+];
 
 export function AiSummaryCard({ className = "" }: AiSummaryCardProps) {
   return (
     <section
-      aria-label="AI Summary of key information"
+      aria-label="Key information"
       className={`border border-primary/20 bg-gradient-to-br from-lavender-subtle/50 via-surface-container-lowest to-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-xs hover:border-primary/40 transition-all ${className}`}
       data-testid="ai-summary-card"
     >
@@ -71,5 +71,5 @@ export function AiSummaryCard({ className = "" }: AiSummaryCardProps) {
         ))}
       </ul>
     </section>
-  )
+  );
 }
