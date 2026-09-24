@@ -28,17 +28,11 @@ import {
 import { PastelPixelCluster } from "@/components/retro/pastel-pixel-cluster"
 import { PixelCursorMotif } from "@/components/retro/pixel-cursor-motif"
 import { RetroMascot } from "@/components/retro/retro-mascot"
-import { useTelemetry } from "@/lib/telemetry"
 import {
-  MOCK_ATHYNA_JOBS,
-  defaultJobsRepository,
-  parseSearchIntent,
-  filterJobs,
+  useJobs,
+  useSearchIntent,
   getRelaxationSuggestions,
   type AthynaJob,
-  type FilterChip,
-  type JobFilterParams,
-  type RelaxationSuggestion,
 } from "@/domain/jobs"
 import { PromotedFilterChips } from "@/components/search/promoted-filter-chips"
 import { ZeroResultFallback } from "@/components/search/zero-result-fallback"
@@ -89,190 +83,44 @@ function formatLocation(loc: AthynaJob["location"]): string {
 }
 
 export default function Home() {
-  const telemetry = useTelemetry()
-  const [jobs, setJobs] = React.useState<AthynaJob[]>(MOCK_ATHYNA_JOBS)
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [tableFilter, setTableFilter] = React.useState("")
-  const [activeChips, setActiveChips] = React.useState<FilterChip[]>([])
+  const {
+    searchQuery,
+    tableFilter,
+    activeChips,
+    appliedFilters,
+    setSearchQuery,
+    setTableFilter,
+    submitHeroSearch,
+    applyPopularSearch,
+    removeChip,
+    clearAllChips,
+    applyRelaxation,
+    resetAll,
+  } = useSearchIntent()
 
-  // Attempt live API fetch; automatically falls back if in sandbox or offline
-  React.useEffect(() => {
-    let mounted = true
-    defaultJobsRepository
-      .getJobs()
-      .then((res) => {
-        if (mounted && res.jobs.length > 0) {
-          setJobs(res.jobs)
-        }
-      })
-      .catch(() => {
-        // Fallback already preloaded
-      })
-    return () => {
-      mounted = false
-    }
-  }, [])
+  const { jobs: filteredJobs, allJobs } = useJobs({ filters: appliedFilters })
 
-  // Consolidate active chips and keyword filter into typed JobFilterParams
-  const appliedFilters = React.useMemo<JobFilterParams>(() => {
-    const params: JobFilterParams = {}
-    if (tableFilter) {
-      params.q = tableFilter
-    }
-    for (const chip of activeChips) {
-      if (chip.type === "remote") {
-        params.remote = true
-      } else if (chip.type === "employmentType") {
-        params.employmentType = chip.value
-      } else if (chip.type === "seniority") {
-        params.seniority = chip.value
-      } else if (chip.type === "skill") {
-        const currentSkills = Array.isArray(params.skills)
-          ? params.skills
-          : params.skills
-          ? [params.skills]
-          : []
-        params.skills = [...currentSkills, chip.value]
-      }
-    }
-    return params
-  }, [tableFilter, activeChips])
-
-  // Filter jobs with zero-latency in-memory query engine
-  const filteredJobs = React.useMemo(() => {
-    return filterJobs(jobs, appliedFilters)
-  }, [jobs, appliedFilters])
-
-  // Generate zero-result relaxation suggestions when no items match
-  const relaxationSuggestions = React.useMemo<RelaxationSuggestion[]>(() => {
+  // Contextual fallback suggestions when search yields 0 results
+  const relaxationSuggestions = React.useMemo(() => {
     if (filteredJobs.length > 0) return []
-    return getRelaxationSuggestions(jobs, appliedFilters)
-  }, [jobs, appliedFilters, filteredJobs.length])
+    return getRelaxationSuggestions(allJobs, appliedFilters)
+  }, [allJobs, appliedFilters, filteredJobs.length])
 
-  // Hero search submission with intent tokenization & chip promotion
-  const handleHeroSearch = (e: React.FormEvent) => {
+  const handleHeroSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const trimmed = searchQuery.trim()
-    if (!trimmed) {
-      setActiveChips([])
-      setTableFilter("")
-      return
-    }
-
-    const intent = parseSearchIntent(trimmed)
-    setActiveChips(intent.chips)
-    setTableFilter(intent.q)
-
-    // Calculate yield for telemetry
-    const yieldCount = filterJobs(jobs, {
-      q: intent.q,
-      remote: intent.isRemote,
-      employmentType: intent.employmentType,
-      seniority: intent.seniority,
-      skills: intent.skills,
-    }).length
-
-    telemetry.trackSearchQuery({
-      raw_query: trimmed,
-      extracted_filters: intent.chips.map((c) => c.label),
-      result_count: yieldCount,
-    })
-
-    // Auto-promote chips and emit telemetry events
-    for (const chip of intent.chips) {
-      telemetry.trackFilterChipToggled({
-        filter_type: chip.type,
-        filter_value: chip.value,
-        action: "add",
-        source: "search_auto_promote",
-      })
-    }
-
+    submitHeroSearch(searchQuery)
     document.getElementById("browse-roles")?.scrollIntoView?.({ behavior: "smooth" })
   }
 
-  // Popular search tag interaction
-  const handlePopularSearchClick = (term: string) => {
-    setSearchQuery(term)
-    const intent = parseSearchIntent(term)
-    if (intent.chips.length > 0) {
-      setActiveChips(intent.chips)
-      setTableFilter(intent.q)
-    } else {
-      setTableFilter(term)
-    }
-
-    telemetry.trackFilterChipToggled({
-      filter_type: "popular_search",
-      filter_value: term,
-      action: "add",
-      source: "manual_click",
-    })
+  const handlePopularSearch = (term: string) => {
+    applyPopularSearch(term)
     document.getElementById("browse-roles")?.scrollIntoView?.({ behavior: "smooth" })
-  }
-
-  // Dismiss promoted filter chip
-  const handleRemoveChip = (chip: FilterChip) => {
-    setActiveChips((prev) => prev.filter((c) => c.id !== chip.id))
-    telemetry.trackFilterChipToggled({
-      filter_type: chip.type,
-      filter_value: chip.value,
-      action: "remove",
-      source: "manual_click",
-    })
-  }
-
-  // Clear all active filter chips
-  const handleClearAllChips = () => {
-    setActiveChips([])
-  }
-
-  // One-click relaxation suggestion handler
-  const handleSelectSuggestion = (suggestion: RelaxationSuggestion) => {
-    if (suggestion.filterKey === "q") {
-      setTableFilter("")
-      setSearchQuery("")
-    } else {
-      setActiveChips((prev) => prev.filter((c) => c.type !== suggestion.filterKey))
-    }
-  }
-
-  // Reset all search criteria
-  const handleResetAllFilters = () => {
-    setSearchQuery("")
-    setTableFilter("")
-    setActiveChips([])
-  }
-
-  // Toolbar search input handler
-  const handleToolbarSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setTableFilter(val)
-    const activeFilterLabels = activeChips.map((c) => c.label)
-    const currentYield = filterJobs(jobs, { ...appliedFilters, q: val }).length
-
-    telemetry.trackSearchQuery({
-      raw_query: val,
-      extracted_filters: activeFilterLabels,
-      result_count: currentYield,
-    })
   }
 
   const handleApplyClick = (job: AthynaJob) => {
-    telemetry.trackApplyCtaClicked({
-      job_id: job.id,
-      position: "table_row",
-    })
     if (typeof window !== "undefined" && job.applicationUrl) {
       window.open(job.applicationUrl, "_blank", "noopener,noreferrer")
     }
-  }
-
-  const handleUnlockAllClick = () => {
-    telemetry.trackApplyCtaClicked({
-      job_id: "unlock_all_roles",
-      position: "banner",
-    })
   }
 
   return (
@@ -296,17 +144,17 @@ export default function Home() {
         </div>
 
         {/* Main Headline with dual-tone AI mark */}
-        <h1 className="font-headline-xl text-3xl sm:text-5xl lg:text-6xl font-extrabold text-on-surface tracking-tight mb-4 flex items-center justify-center flex-wrap gap-x-3.5">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-on-surface tracking-tight mb-4 flex items-center justify-center flex-wrap gap-x-3.5">
           <span>Be the future of</span>
           <span className="font-serif italic font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-primary via-violet-accent to-primary-container drop-shadow-sm select-none">
             AI
           </span>
         </h1>
 
-        <p className="font-headline-sm text-lg sm:text-xl text-on-surface font-semibold max-w-2xl leading-snug">
+        <p className="text-lg sm:text-xl text-on-surface font-semibold max-w-2xl leading-snug">
           Find your new opportunity to grow in the hottest field in the world.
         </p>
-        <p className="font-body-md text-sm sm:text-base text-on-surface-variant max-w-2xl mt-1">
+        <p className="text-sm sm:text-base text-on-surface-variant max-w-2xl mt-1">
           Thousands of jobs in AI at your fingertips with Athyna.
         </p>
 
@@ -320,7 +168,7 @@ export default function Home() {
         </Link>
 
         {/* Center Search Bar */}
-        <form onSubmit={handleHeroSearch} className="w-full max-w-3xl mt-8 relative">
+        <form onSubmit={handleHeroSubmit} className="w-full max-w-3xl mt-8 relative">
           <div className="bg-surface-container-lowest rounded-full p-2 pl-6 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3 border border-border-subtle">
             <Search className="size-5 text-text-muted shrink-0" />
             <input
@@ -352,7 +200,7 @@ export default function Home() {
             <button
               key={term}
               type="button"
-              onClick={() => handlePopularSearchClick(term)}
+              onClick={() => handlePopularSearch(term)}
               className="px-3.5 py-1.5 bg-surface-container-lowest text-on-surface hover:bg-lavender-subtle hover:text-primary font-sans text-xs sm:text-sm rounded-full border border-border-subtle shadow-xs transition-colors cursor-pointer"
             >
               {term}
@@ -371,7 +219,7 @@ export default function Home() {
                 <Input
                   placeholder="Search for jobs"
                   value={tableFilter}
-                  onChange={handleToolbarSearchChange}
+                  onChange={(e) => setTableFilter(e.target.value)}
                   icon={<Search className="size-4" />}
                   pill
                   className="bg-surface-container border-transparent"
@@ -410,8 +258,8 @@ export default function Home() {
           {/* Auto-promoted filter chips from parsed search intent */}
           <PromotedFilterChips
             chips={activeChips}
-            onRemoveChip={handleRemoveChip}
-            onClearAll={handleClearAllChips}
+            onRemoveChip={removeChip}
+            onClearAll={clearAllChips}
           />
         </div>
 
@@ -434,8 +282,8 @@ export default function Home() {
           <ZeroResultFallback
             query={tableFilter || searchQuery}
             suggestions={relaxationSuggestions}
-            onSelectSuggestion={handleSelectSuggestion}
-            onResetAll={handleResetAllFilters}
+            onSelectSuggestion={applyRelaxation}
+            onResetAll={resetAll}
           />
         ) : (
           <div className="bg-surface-container-lowest rounded-2xl border border-border-subtle shadow-xs overflow-hidden">
@@ -545,7 +393,6 @@ export default function Home() {
                 variant="mint"
                 pill
                 size="lg"
-                onClick={handleUnlockAllClick}
                 className="w-full max-w-xl py-3.5 px-6 font-bold text-center flex items-center justify-center gap-2 shadow-md hover:shadow-lg text-base"
               >
                 <Unlock className="size-5" />
@@ -570,26 +417,20 @@ export default function Home() {
           </div>
 
           <div className="relative z-10 max-w-3xl flex flex-col items-center">
-            <h2 className="font-headline-xl text-2xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white mb-4">
               Ready to help build the future of{" "}
               <span className="font-serif italic font-normal underline decoration-mint-emerald decoration-4 underline-offset-8">
                 Athyna
               </span>
               ?
             </h2>
-            <p className="font-body-lg text-sm sm:text-base text-lavender-subtle/90 max-w-2xl leading-relaxed mb-6 font-normal">
+            <p className="text-sm sm:text-base text-lavender-subtle/90 max-w-2xl leading-relaxed mb-6 font-normal">
               We are always looking for amazing talent to join our team as we change the face of work around the world. Explore remote positions that let you grow with us.
             </p>
             <Button
               variant="mint"
               pill
               size="lg"
-              onClick={() =>
-                telemetry.trackApplyCtaClicked({
-                  job_id: "athyna_internal",
-                  position: "banner",
-                })
-              }
               className="text-base px-8 py-3.5 font-bold shadow-lg"
             >
               Apply now

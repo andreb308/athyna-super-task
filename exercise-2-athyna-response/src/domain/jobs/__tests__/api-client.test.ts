@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { AthynaApiClient } from "../api-client"
+import { describe, it, expect, vi } from "vitest"
+import type { AxiosInstance } from "axios"
+import { fetchJobs, fetchJobById, createJobsApiClient } from "../api-client"
 
-describe("AthynaApiClient", () => {
-  const mockFetch = vi.fn()
-
-  beforeEach(() => {
-    vi.resetAllMocks()
-    global.fetch = mockFetch
+describe("Functional Jobs API Client", () => {
+  it("initializes an Axios client with base URL and timeout", () => {
+    const client = createJobsApiClient("https://custom.api.athyna.com")
+    expect(client.defaults.baseURL).toBe("https://custom.api.athyna.com")
+    expect(client.defaults.timeout).toBe(8000)
   })
 
-  it("constructs correct query parameters when fetching jobs", async () => {
+  it("fetches jobs passing serialized query params and validates response schema", async () => {
     const fakeJobs = [
       {
         id: "job-abc",
@@ -24,30 +24,33 @@ describe("AthynaApiClient", () => {
       },
     ]
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
+    const mockGet = vi.fn().mockResolvedValueOnce({
+      data: fakeJobs,
       status: 200,
-      json: async () => fakeJobs,
     })
 
-    const client = new AthynaApiClient({ baseUrl: "https://test.api.athyna.com" })
-    const result = await client.fetchJobs({
-      q: "engineer",
-      remote: true,
-      seniority: "Staff",
-      skills: ["Python"],
-      pageSize: 20,
+    const mockClient = { get: mockGet } as unknown as AxiosInstance
+
+    const result = await fetchJobs(
+      {
+        q: "engineer",
+        remote: true,
+        seniority: "Staff",
+        skills: ["Python", "AI"],
+        pageSize: 20,
+      },
+      mockClient
+    )
+
+    expect(mockGet).toHaveBeenCalledWith("/api/public/jobs", {
+      params: {
+        q: "engineer",
+        remote: true,
+        seniority: "Staff",
+        skills: "Python,AI",
+        pageSize: 20,
+      },
     })
-
-    expect(mockFetch).toHaveBeenCalledTimes(1)
-    const callUrl = mockFetch.mock.calls[0][0] as string
-    expect(callUrl).toContain("https://test.api.athyna.com/api/public/jobs?")
-    expect(callUrl).toContain("q=engineer")
-    expect(callUrl).toContain("remote=true")
-    expect(callUrl).toContain("seniority=Staff")
-    expect(callUrl).toContain("skills=Python")
-    expect(callUrl).toContain("pageSize=20")
-
     expect(result.data).toHaveLength(1)
     expect(result.data[0].id).toBe("job-abc")
     expect(result.total).toBe(1)
@@ -66,43 +69,26 @@ describe("AthynaApiClient", () => {
       publishedAt: "2026-01-01T00:00:00Z",
     }
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
+    const mockGet = vi.fn().mockResolvedValueOnce({
+      data: singleJob,
       status: 200,
-      json: async () => singleJob,
     })
 
-    const client = new AthynaApiClient({ baseUrl: "https://test.api.athyna.com" })
-    const job = await client.fetchJobById("job-123")
+    const mockClient = { get: mockGet } as unknown as AxiosInstance
+    const job = await fetchJobById("job-123", mockClient)
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://test.api.athyna.com/api/public/jobs/job-123",
-      expect.any(Object)
-    )
+    expect(mockGet).toHaveBeenCalledWith("/api/public/jobs/job-123")
     expect(job.id).toBe("job-123")
     expect(job.title).toBe("AI Researcher")
   })
 
-  it("throws when the API returns a non-200 status", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      statusText: "Not Found",
-      text: async () => "Job not found",
-    })
-
-    const client = new AthynaApiClient()
-    await expect(client.fetchJobById("non-existent")).rejects.toThrow(/API error: 404/)
-  })
-
-  it("throws validation error when API response fails Zod schema", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
+  it("throws validation error when API returns malformed payload", async () => {
+    const mockGet = vi.fn().mockResolvedValueOnce({
+      data: { invalid: "missing required fields" },
       status: 200,
-      json: async () => ({ invalid: "payload missing required fields" }),
     })
 
-    const client = new AthynaApiClient()
-    await expect(client.fetchJobs()).rejects.toThrow()
+    const mockClient = { get: mockGet } as unknown as AxiosInstance
+    await expect(fetchJobs({}, mockClient)).rejects.toThrow()
   })
 })

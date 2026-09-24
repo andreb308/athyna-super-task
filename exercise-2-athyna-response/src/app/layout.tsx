@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { Header } from "@/components/shell/header";
 import { Footer } from "@/components/shell/footer";
-import { TelemetryProvider } from "@/lib/telemetry";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -33,13 +32,11 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} ${spaceGrotesk.variable} antialiased min-h-screen bg-surface text-on-surface font-sans flex flex-col`}
       >
-        <TelemetryProvider>
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </TelemetryProvider>
+        <Header />
+        <main className="flex-1">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );

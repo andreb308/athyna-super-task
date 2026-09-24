@@ -1,4 +1,4 @@
-import { athynaJobSchema, type AthynaJob } from "./schema"
+import { athynaJobSchema, type AthynaJob } from "./schema";
 
 const RAW_MOCK_JOBS = [
   {
@@ -6,7 +6,8 @@ const RAW_MOCK_JOBS = [
     slug: "commercial-legal-specialist-technical-ai",
     title: "Commercial Legal Specialist, Technical AI Implementation",
     url: "https://develop.api.athyna.com/api/public/jobs/anthropic-legal",
-    applicationUrl: "https://boards.anthropic.com/jobs/commercial-legal-specialist",
+    applicationUrl:
+      "https://boards.anthropic.com/jobs/commercial-legal-specialist",
     company: {
       name: "Anthropic",
       logoUrl: null,
@@ -28,8 +29,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Compliance", "Contract Negotiation"],
-    overview: "Help scale technical AI deployments across global cloud partners with rigorous legal frameworks.",
-    description: "Anthropic is looking for a commercial legal specialist to guide AI implementation agreements...",
+    overview:
+      "Help scale technical AI deployments across global cloud partners with rigorous legal frameworks.",
+    description:
+      "Anthropic is looking for a commercial legal specialist to guide AI implementation agreements...",
     publishedAt: "2026-09-23T10:00:00.000Z",
     updatedAt: "2026-09-23T10:00:00.000Z",
     matchIndex: 95,
@@ -61,8 +64,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Operations", "Prompt Engineering"],
-    overview: "Manage workforce programs evaluating high-risk safety thresholds in large frontier models.",
-    description: "Drive day-to-day operations and safety benchmark evaluations for frontier systems.",
+    overview:
+      "Manage workforce programs evaluating high-risk safety thresholds in large frontier models.",
+    description:
+      "Drive day-to-day operations and safety benchmark evaluations for frontier systems.",
     publishedAt: "2026-09-23T10:00:00.000Z",
     updatedAt: "2026-09-23T10:00:00.000Z",
     matchIndex: 95,
@@ -72,7 +77,8 @@ const RAW_MOCK_JOBS = [
     slug: "enforcement-operations-lead-cloud-partners",
     title: "Enforcement Operations Lead, Cloud Partners",
     url: "https://develop.api.athyna.com/api/public/jobs/anthropic-enforcement",
-    applicationUrl: "https://boards.anthropic.com/jobs/enforcement-operations-lead",
+    applicationUrl:
+      "https://boards.anthropic.com/jobs/enforcement-operations-lead",
     company: {
       name: "Anthropic",
       logoUrl: null,
@@ -94,8 +100,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Cloud", "Security"],
-    overview: "Lead enforcement operations ensuring responsible API usage and policy adherence with major cloud platforms.",
-    description: "Coordinate with cloud providers to protect model safety standards at massive scale.",
+    overview:
+      "Lead enforcement operations ensuring responsible API usage and policy adherence with major cloud platforms.",
+    description:
+      "Coordinate with cloud providers to protect model safety standards at massive scale.",
     publishedAt: "2026-09-23T10:00:00.000Z",
     updatedAt: "2026-09-23T10:00:00.000Z",
     matchIndex: 95,
@@ -127,8 +135,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Product Management", "Generative AI"],
-    overview: "Pioneer novel commercialization strategies for next-generation intelligence tooling.",
-    description: "Collaborate across research and enterprise sales to deploy disruptive capabilities.",
+    overview:
+      "Pioneer novel commercialization strategies for next-generation intelligence tooling.",
+    description:
+      "Collaborate across research and enterprise sales to deploy disruptive capabilities.",
     publishedAt: "2026-09-23T10:00:00.000Z",
     updatedAt: "2026-09-23T10:00:00.000Z",
     matchIndex: 95,
@@ -160,8 +170,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Python", "ML"],
-    overview: "Deploy customized open weights and frontier models into high-throughput enterprise architectures.",
-    description: "Work with engineering teams to tune inference latency and optimize context windows.",
+    overview:
+      "Deploy customized open weights and frontier models into high-throughput enterprise architectures.",
+    description:
+      "Work with engineering teams to tune inference latency and optimize context windows.",
     publishedAt: "2026-09-23T10:00:00.000Z",
     updatedAt: "2026-09-23T10:00:00.000Z",
     matchIndex: 95,
@@ -193,8 +205,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Research", "Deep Learning"],
-    overview: "Coordinate frontier alignment and red-teaming programs alongside world-class scientists.",
-    description: "Manage research milestones, compute allocations, and assurance criteria.",
+    overview:
+      "Coordinate frontier alignment and red-teaming programs alongside world-class scientists.",
+    description:
+      "Manage research milestones, compute allocations, and assurance criteria.",
     publishedAt: "2026-09-22T10:00:00.000Z",
     updatedAt: "2026-09-22T10:00:00.000Z",
     matchIndex: 95,
@@ -226,8 +240,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Python", "C++", "ML"],
-    overview: "Build low-latency on-device inference engines for smart glasses and augmented reality.",
-    description: "Optimize quantization and real-time sensory pipelines on constrained silicon.",
+    overview:
+      "Build low-latency on-device inference engines for smart glasses and augmented reality.",
+    description:
+      "Optimize quantization and real-time sensory pipelines on constrained silicon.",
     publishedAt: "2026-09-22T10:00:00.000Z",
     updatedAt: "2026-09-22T10:00:00.000Z",
     matchIndex: 95,
@@ -259,8 +275,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Product Design", "Figma", "Design Systems"],
-    overview: "Craft intuitive, protective experiences ensuring candidate and creator trust at planetary scale.",
-    description: "Design nuanced intervention flows and clear explainability UX across platforms.",
+    overview:
+      "Craft intuitive, protective experiences ensuring candidate and creator trust at planetary scale.",
+    description:
+      "Design nuanced intervention flows and clear explainability UX across platforms.",
     publishedAt: "2026-09-22T10:00:00.000Z",
     updatedAt: "2026-09-22T10:00:00.000Z",
     matchIndex: 95,
@@ -292,8 +310,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["AI", "Customer Experience", "Prompt Engineering"],
-    overview: "Partner with global law firms to implement generative AI workflows with white-glove precision.",
-    description: "Provide proactive technical support and workflow modeling for partner attorneys.",
+    overview:
+      "Partner with global law firms to implement generative AI workflows with white-glove precision.",
+    description:
+      "Provide proactive technical support and workflow modeling for partner attorneys.",
     publishedAt: "2026-09-18T10:00:00.000Z",
     updatedAt: "2026-09-18T10:00:00.000Z",
     matchIndex: 95,
@@ -303,7 +323,8 @@ const RAW_MOCK_JOBS = [
     slug: "lead-react-fullstack-engineer",
     title: "Lead React Full-Stack Engineer",
     url: "https://develop.api.athyna.com/api/public/jobs/athyna-react-lead",
-    applicationUrl: "https://jobs.athyna.com/jobs/lead-react-fullstack-engineer/apply",
+    applicationUrl:
+      "https://jobs.athyna.com/jobs/lead-react-fullstack-engineer/apply",
     company: {
       name: "Athyna",
       logoUrl: null,
@@ -325,8 +346,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["React", "TypeScript", "Node.js", "GraphQL"],
-    overview: "Spearhead the next evolution of our global hiring platform using modern React and edge computing.",
-    description: "Architect high-conversion job discovery and candidate retention funnels.",
+    overview:
+      "Spearhead the next evolution of our global hiring platform using modern React and edge computing.",
+    description:
+      "Architect high-conversion job discovery and candidate retention funnels.",
     publishedAt: "2026-09-24T08:00:00.000Z",
     updatedAt: "2026-09-24T08:00:00.000Z",
     matchIndex: 98,
@@ -358,8 +381,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Python", "NLP", "Machine Learning"],
-    overview: "Conduct focused multilingual representation experiments on 20 hours per week schedule.",
-    description: "Collaborate with foundational model teams on semantic search benchmarking.",
+    overview:
+      "Conduct focused multilingual representation experiments on 20 hours per week schedule.",
+    description:
+      "Collaborate with foundational model teams on semantic search benchmarking.",
     publishedAt: "2026-09-23T14:00:00.000Z",
     updatedAt: "2026-09-23T14:00:00.000Z",
     matchIndex: 94,
@@ -391,8 +416,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Python", "TypeScript", "AI", "ML"],
-    overview: "Build ultra-responsive speculative decoding and semantic indexing for the next-gen AI code editor.",
-    description: "Deep dive into model serving, context retrieval, and fast code reasoning pipelines.",
+    overview:
+      "Build ultra-responsive speculative decoding and semantic indexing for the next-gen AI code editor.",
+    description:
+      "Deep dive into model serving, context retrieval, and fast code reasoning pipelines.",
     publishedAt: "2026-09-24T06:00:00.000Z",
     updatedAt: "2026-09-24T06:00:00.000Z",
     matchIndex: 97,
@@ -424,8 +451,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["React", "TypeScript", "Tailwind CSS"],
-    overview: "Craft pixel-perfect, sub-50ms user interactions and buttery smooth keyboard shortcuts.",
-    description: "Champion client-side synchronization and performant web UI architectures.",
+    overview:
+      "Craft pixel-perfect, sub-50ms user interactions and buttery smooth keyboard shortcuts.",
+    description:
+      "Champion client-side synchronization and performant web UI architectures.",
     publishedAt: "2026-09-23T11:00:00.000Z",
     updatedAt: "2026-09-23T11:00:00.000Z",
     matchIndex: 96,
@@ -457,8 +486,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["DevOps", "AWS", "Rust", "Go"],
-    overview: "Scale global edge network routing millions of AI requests and dynamic builds per second.",
-    description: "Build robust multi-region container orchestration and observability tooling.",
+    overview:
+      "Scale global edge network routing millions of AI requests and dynamic builds per second.",
+    description:
+      "Build robust multi-region container orchestration and observability tooling.",
     publishedAt: "2026-09-22T15:00:00.000Z",
     updatedAt: "2026-09-22T15:00:00.000Z",
     matchIndex: 93,
@@ -490,8 +521,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["QA", "TypeScript", "PostgreSQL", "DevOps"],
-    overview: "Automate end-to-end integration and chaos tests across cloud database clusters.",
-    description: "Design comprehensive regression suites ensuring 99.99% reliability for developer databases.",
+    overview:
+      "Automate end-to-end integration and chaos tests across cloud database clusters.",
+    description:
+      "Design comprehensive regression suites ensuring 99.99% reliability for developer databases.",
     publishedAt: "2026-09-21T09:00:00.000Z",
     updatedAt: "2026-09-21T09:00:00.000Z",
     matchIndex: 91,
@@ -523,8 +556,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Data Engineering", "Python", "SQL", "Kafka"],
-    overview: "Process petabytes of real-time streaming telemetry and construct low-latency analytical data lakes.",
-    description: "Architect streaming pipelines with Apache Flink, ClickHouse, and modern orchestration tools.",
+    overview:
+      "Process petabytes of real-time streaming telemetry and construct low-latency analytical data lakes.",
+    description:
+      "Architect streaming pipelines with Apache Flink, ClickHouse, and modern orchestration tools.",
     publishedAt: "2026-09-20T12:00:00.000Z",
     updatedAt: "2026-09-20T12:00:00.000Z",
     matchIndex: 94,
@@ -556,8 +591,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Prompt Engineering", "Python", "AI", "NLP"],
-    overview: "Design adversarial prompt suites and multi-turn benchmarks to evaluate reasoning frontiers.",
-    description: "Work with top foundation model creators to structure high-density domain prompt curricula.",
+    overview:
+      "Design adversarial prompt suites and multi-turn benchmarks to evaluate reasoning frontiers.",
+    description:
+      "Work with top foundation model creators to structure high-density domain prompt curricula.",
     publishedAt: "2026-09-24T05:00:00.000Z",
     updatedAt: "2026-09-24T05:00:00.000Z",
     matchIndex: 95,
@@ -589,8 +626,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["TypeScript", "React", "Node.js"],
-    overview: "Join an agile team empowering the next 100M developers with collaborative browser-based environments.",
-    description: "Write clean React components and container integration hooks with experienced mentorship.",
+    overview:
+      "Join an agile team empowering the next 100M developers with collaborative browser-based environments.",
+    description:
+      "Write clean React components and container integration hooks with experienced mentorship.",
     publishedAt: "2026-09-23T16:00:00.000Z",
     updatedAt: "2026-09-23T16:00:00.000Z",
     matchIndex: 90,
@@ -622,8 +661,10 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Python", "TypeScript", "React"],
-    overview: "Create tutorials, reference architectures, and open-source integrations for AI monetization.",
-    description: "Empower developers building autonomous AI agents with seamless payments infrastructure.",
+    overview:
+      "Create tutorials, reference architectures, and open-source integrations for AI monetization.",
+    description:
+      "Empower developers building autonomous AI agents with seamless payments infrastructure.",
     publishedAt: "2026-09-22T08:00:00.000Z",
     updatedAt: "2026-09-22T08:00:00.000Z",
     matchIndex: 93,
@@ -655,15 +696,17 @@ const RAW_MOCK_JOBS = [
       period: "year",
     },
     skills: ["Python", "AI", "ML", "PyTorch"],
-    overview: "Participate in mechanistic interpretability experiments tracing neural activation circuits.",
-    description: "12-week intensive research internship working closely with alignment researchers.",
+    overview:
+      "Participate in mechanistic interpretability experiments tracing neural activation circuits.",
+    description:
+      "12-week intensive research internship working closely with alignment researchers.",
     publishedAt: "2026-09-24T09:00:00.000Z",
     updatedAt: "2026-09-24T09:00:00.000Z",
     matchIndex: 91,
   },
-]
+];
 
 // Strictly parse and validate all 20 jobs with Zod
 export const MOCK_ATHYNA_JOBS: AthynaJob[] = RAW_MOCK_JOBS.map((raw) =>
-  athynaJobSchema.parse(raw)
-)
+  athynaJobSchema.parse(raw),
+);
