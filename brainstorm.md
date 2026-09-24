@@ -1,5 +1,9 @@
 # Brainstorming
 
+## Exercise 03
+* First thought from skimming through the code is that the button simply uses router.back() instead of doing a smart check. Considering most people come from Google, the "Back to Jobs" button would simply bring them back to the Google page instead of the actual Athyna job list.
+* Fix -> Logic that checks if the previous page is of the same domain, if so then go back, but if not, then navigate to the Athyna job list instead.
+
 ## DISCARDED - Make account creation easier
 - Profile filling is currently based on CV or manual only; no LinkedIn.
 - Does mention you can import it from the LinkedIn PDF auto-generated resumé, but going back to your profile to get the latest version means leaving the Athyna website, potentially finding something else that could grab the user's attention (considering LinkedIn itself would also try to keep the user's attention on their website instead).
