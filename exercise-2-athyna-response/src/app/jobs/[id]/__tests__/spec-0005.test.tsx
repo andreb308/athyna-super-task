@@ -360,3 +360,35 @@ describe("Spec 0005: Modal Sizing and Ellipsis Truncation", () => {
     expect(titleElement.className).toContain("truncate")
   })
 })
+
+describe("Spec 0005: AI Summary of Key Information Card", () => {
+  it("renders AI Summary card above the fold in the hero with constant key information bullets", () => {
+    render(<JobDetailsClient id={sampleJob.id} initialJob={sampleJob} />)
+
+    const aiSummaryCard = screen.getByTestId("ai-summary-card")
+    expect(aiSummaryCard).toBeInTheDocument()
+    expect(aiSummaryCard).toHaveTextContent("AI Summary of Key Information")
+
+    // Verify all 4 required bullet points and content
+    expect(aiSummaryCard).toHaveTextContent("Core Role:")
+    expect(aiSummaryCard).toHaveTextContent(
+      "Implement Claude-driven AI solutions and integrations to automate and scale Anthropic's legal workflows."
+    )
+
+    expect(aiSummaryCard).toHaveTextContent("Must-Have Skills:")
+    expect(aiSummaryCard).toHaveTextContent(
+      "Proven experience deploying legal technology platforms and hands-on proficiency with LLMs (especially Claude)."
+    )
+
+    expect(aiSummaryCard).toHaveTextContent("Work Arrangement:")
+    expect(aiSummaryCard).toHaveTextContent(
+      "Hybrid schedule requiring at least three days per week in either the San Francisco or New York office."
+    )
+
+    expect(aiSummaryCard).toHaveTextContent("Compensation & Visa:")
+    expect(aiSummaryCard).toHaveTextContent(
+      "Annual base salary of $170,000–$220,000 USD, with potential visa sponsorship provided."
+    )
+  })
+})
+

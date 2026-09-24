@@ -21,6 +21,7 @@ import { SimilarRolesShelf } from "./similar-roles-shelf"
 import { PostApplyDialog } from "./post-apply-dialog"
 import { JobSkeleton } from "./job-skeleton"
 import { JobNotFound } from "./job-not-found"
+import { AiSummaryCard } from "./ai-summary-card"
 
 export interface JobDetailsClientProps {
   id: string
@@ -132,8 +133,11 @@ export function JobDetailsClient({ id, initialJob }: JobDetailsClientProps) {
           <AtAGlanceBadges job={job} className="mt-4" />
         </div>
 
+        {/* AI Summary of Key Information */}
+        <AiSummaryCard className="mt-8" />
+
         {/* Spec Overview Container (4 Columns) */}
-        <SpecOverviewCard job={job} className="mt-8" />
+        <SpecOverviewCard job={job} className="mt-4" />
 
         {/* Job Interactions: Save / Mark as Applied */}
         <JobInteractions jobId={job.id} />
