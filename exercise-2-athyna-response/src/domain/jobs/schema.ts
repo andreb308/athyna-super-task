@@ -125,8 +125,8 @@ export interface JobFilterParams {
   q?: string
   remote?: boolean
   skills?: string[] | string
-  seniority?: string
-  employmentType?: string
+  seniority?: string | string[]
+  employmentType?: string | string[]
   city?: string
   country?: string
   minSalary?: number

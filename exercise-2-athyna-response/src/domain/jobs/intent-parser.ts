@@ -1,6 +1,6 @@
 export interface FilterChip {
   id: string
-  type: "remote" | "employmentType" | "seniority" | "skill"
+  type: "remote" | "employmentType" | "seniority" | "skill" | "salary" | "location"
   value: string
   label: string
 }

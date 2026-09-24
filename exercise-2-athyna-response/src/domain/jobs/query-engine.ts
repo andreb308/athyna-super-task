@@ -19,10 +19,20 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
   if (!params) return jobs
 
   const q = normalize(params.q)
-  const targetSeniority = normalize(params.seniority)
-  const targetEmploymentType = normalize(params.employmentType)
   const targetCity = normalize(params.city)
   const targetCountry = normalize(params.country)
+
+  const seniorityList = Array.isArray(params.seniority)
+    ? params.seniority.map((s) => normalize(s))
+    : params.seniority
+    ? [normalize(params.seniority)]
+    : []
+
+  const employmentTypeList = Array.isArray(params.employmentType)
+    ? params.employmentType.map((e) => normalize(e).replace(/[- ]/g, ""))
+    : params.employmentType
+    ? [normalize(params.employmentType).replace(/[- ]/g, "")]
+    : []
 
   const skillArray = Array.isArray(params.skills)
     ? params.skills.map((s) => normalize(s))
@@ -39,19 +49,23 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
     }
 
     // 2. Seniority filter
-    if (targetSeniority) {
+    if (seniorityList.length > 0) {
       const jobSeniority = normalize(job.seniority)
-      if (!jobSeniority.includes(targetSeniority) && !targetSeniority.includes(jobSeniority)) {
+      const matches = seniorityList.some(
+        (target) => jobSeniority.includes(target) || target.includes(jobSeniority)
+      )
+      if (!matches) {
         return false
       }
     }
 
     // 3. Employment type filter
-    if (targetEmploymentType) {
-      const jobEmp = normalize(job.employmentType)
-      const sanitizedTarget = targetEmploymentType.replace(/[- ]/g, "")
-      const sanitizedJob = jobEmp.replace(/[- ]/g, "")
-      if (!sanitizedJob.includes(sanitizedTarget) && !sanitizedTarget.includes(sanitizedJob)) {
+    if (employmentTypeList.length > 0) {
+      const jobEmp = normalize(job.employmentType).replace(/[- ]/g, "")
+      const matches = employmentTypeList.some(
+        (target) => jobEmp.includes(target) || target.includes(jobEmp)
+      )
+      if (!matches) {
         return false
       }
     }
@@ -81,13 +95,20 @@ export function filterJobs(jobs: AthynaJob[], params?: JobFilterParams): AthynaJ
 
     // 6. Salary filters
     if (params.salary !== undefined) {
-      if (job.salary?.max && job.salary.max < params.salary) return false
+      const max = job.salary?.max ?? job.salary?.min
+      if (max !== undefined && max !== null && max < params.salary) return false
     }
-    if (params.minSalary !== undefined && job.salary?.max && job.salary.max < params.minSalary) {
-      return false
+    if (params.minSalary !== undefined) {
+      const max = job.salary?.max ?? job.salary?.min
+      if (max !== undefined && max !== null && max < params.minSalary) {
+        return false
+      }
     }
-    if (params.maxSalary !== undefined && job.salary?.min && job.salary.min > params.maxSalary) {
-      return false
+    if (params.maxSalary !== undefined) {
+      const min = job.salary?.min ?? job.salary?.max
+      if (min !== undefined && min !== null && min > params.maxSalary) {
+        return false
+      }
     }
 
     // 7. Published date filter

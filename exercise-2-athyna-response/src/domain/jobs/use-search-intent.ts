@@ -10,6 +10,8 @@ export interface UseSearchIntentResult {
   tableFilter: string
   activeChips: FilterChip[]
   appliedFilters: JobFilterParams
+  sortBy?: "publishedAt" | "salary" | "title"
+  sortOrder?: "asc" | "desc"
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>
   setTableFilter: React.Dispatch<React.SetStateAction<string>>
   submitHeroSearch: (query: string) => SearchIntent
@@ -17,6 +19,9 @@ export interface UseSearchIntentResult {
   removeChip: (chip: FilterChip) => void
   clearAllChips: () => void
   toggleFilter: (chip: FilterChip) => void
+  setSalaryFilter: (min?: number, max?: number) => void
+  setLocationFilter: (city?: string) => void
+  setSort: (sortBy?: "publishedAt" | "salary" | "title", sortOrder?: "asc" | "desc") => void
   applyRelaxation: (suggestion: RelaxationSuggestion) => void
   resetAll: () => void
 }
@@ -25,32 +30,63 @@ export function useSearchIntent(): UseSearchIntentResult {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [tableFilter, setTableFilterState] = React.useState("")
   const [activeChips, setActiveChips] = React.useState<FilterChip[]>([])
+  const [sortBy, setSortBy] = React.useState<"publishedAt" | "salary" | "title" | undefined>(undefined)
+  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc" | undefined>(undefined)
 
   // Combined filters from active chips and residual table filter
   const appliedFilters = React.useMemo<JobFilterParams>(() => {
     const params: JobFilterParams = {
       q: tableFilter || "",
     }
+    const empTypes: string[] = []
+    const seniorities: string[] = []
+    const skills: string[] = []
+
     for (const chip of activeChips) {
       if (chip.type === "remote") {
         params.remote = true
       } else if (chip.type === "employmentType") {
-        params.employmentType = chip.value
-      } else if (chip.type === "seniority") {
-        params.seniority = chip.value
-      } else if (chip.type === "skill") {
-        const existing = Array.isArray(params.skills)
-          ? params.skills
-          : params.skills
-          ? [params.skills]
-          : []
-        if (!existing.includes(chip.value)) {
-          params.skills = [...existing, chip.value]
+        if (!empTypes.includes(chip.value)) {
+          empTypes.push(chip.value)
         }
+      } else if (chip.type === "seniority") {
+        if (!seniorities.includes(chip.value)) {
+          seniorities.push(chip.value)
+        }
+      } else if (chip.type === "skill") {
+        if (!skills.includes(chip.value)) {
+          skills.push(chip.value)
+        }
+      } else if (chip.type === "salary") {
+        const [minStr, maxStr] = chip.value.split(":")
+        if (minStr) params.minSalary = Number(minStr)
+        if (maxStr) params.maxSalary = Number(maxStr)
+      } else if (chip.type === "location") {
+        params.city = chip.value
       }
     }
+
+    if (empTypes.length === 1) {
+      params.employmentType = empTypes[0]
+    } else if (empTypes.length > 1) {
+      params.employmentType = empTypes
+    }
+
+    if (seniorities.length === 1) {
+      params.seniority = seniorities[0]
+    } else if (seniorities.length > 1) {
+      params.seniority = seniorities
+    }
+
+    if (skills.length > 0) {
+      params.skills = skills
+    }
+
+    if (sortBy) params.sortBy = sortBy
+    if (sortOrder) params.sortOrder = sortOrder
+
     return params
-  }, [tableFilter, activeChips])
+  }, [tableFilter, activeChips, sortBy, sortOrder])
 
   // Linked table filter updater that automatically extracts intent tokens
   const setTableFilter = React.useCallback(
@@ -128,10 +164,66 @@ export function useSearchIntent(): UseSearchIntentResult {
     }
   }, [])
 
+  const setSalaryFilter = React.useCallback((min?: number, max?: number) => {
+    setActiveChips((prev) => {
+      const filtered = prev.filter((c) => c.type !== "salary")
+      if ((min === undefined || isNaN(min)) && (max === undefined || isNaN(max))) {
+        return filtered
+      }
+      let label = ""
+      if (min !== undefined && !isNaN(min) && max !== undefined && !isNaN(max)) {
+        label = `$USD ${min.toLocaleString()} - $USD ${max.toLocaleString()}`
+      } else if (min !== undefined && !isNaN(min)) {
+        label = `Min: $USD ${min.toLocaleString()}`
+      } else if (max !== undefined && !isNaN(max)) {
+        label = `Max: $USD ${max.toLocaleString()}`
+      }
+
+      return [
+        ...filtered,
+        {
+          id: "salary-filter",
+          type: "salary" as const,
+          value: `${min !== undefined && !isNaN(min) ? min : ""}:${max !== undefined && !isNaN(max) ? max : ""}`,
+          label,
+        },
+      ]
+    })
+  }, [])
+
+  const setLocationFilter = React.useCallback((city?: string) => {
+    setActiveChips((prev) => {
+      const filtered = prev.filter((c) => c.type !== "location")
+      if (!city || !city.trim()) {
+        return filtered
+      }
+      const trimmed = city.trim()
+      return [
+        ...filtered,
+        {
+          id: `location-${trimmed.toLowerCase()}`,
+          type: "location" as const,
+          value: trimmed,
+          label: `Location: ${trimmed}`,
+        },
+      ]
+    })
+  }, [])
+
+  const setSort = React.useCallback(
+    (newSortBy?: "publishedAt" | "salary" | "title", newSortOrder?: "asc" | "desc") => {
+      setSortBy(newSortBy)
+      setSortOrder(newSortOrder)
+    },
+    []
+  )
+
   const resetAll = React.useCallback(() => {
     setSearchQuery("")
     setTableFilterState("")
     setActiveChips([])
+    setSortBy(undefined)
+    setSortOrder(undefined)
   }, [])
 
   return {
@@ -139,6 +231,8 @@ export function useSearchIntent(): UseSearchIntentResult {
     tableFilter,
     activeChips,
     appliedFilters,
+    sortBy,
+    sortOrder,
     setSearchQuery,
     setTableFilter,
     submitHeroSearch,
@@ -146,6 +240,9 @@ export function useSearchIntent(): UseSearchIntentResult {
     removeChip,
     clearAllChips,
     toggleFilter,
+    setSalaryFilter,
+    setLocationFilter,
+    setSort,
     applyRelaxation,
     resetAll,
   }

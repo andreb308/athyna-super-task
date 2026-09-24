@@ -28,11 +28,15 @@ export async function fetchJobs(
   const queryParams: Record<string, unknown> = {}
 
   if (params.q) queryParams.q = params.q
-  if (params.remote !== undefined) queryParams.remote = params.remote
-  if (params.seniority) queryParams.seniority = params.seniority
-  if (params.employmentType) queryParams.employmentType = params.employmentType
+  if (params.seniority) {
+    queryParams.seniority = Array.isArray(params.seniority) ? params.seniority.join(",") : params.seniority
+  }
+  if (params.employmentType) {
+    queryParams.employmentType = Array.isArray(params.employmentType) ? params.employmentType.join(",") : params.employmentType
+  }
   if (params.city) queryParams.city = params.city
   if (params.country) queryParams.country = params.country
+  if (params.remote !== undefined) queryParams.remote = params.remote
   if (params.salary !== undefined) queryParams.salary = params.salary
   if (params.minSalary !== undefined) queryParams.minSalary = params.minSalary
   if (params.maxSalary !== undefined) queryParams.maxSalary = params.maxSalary
